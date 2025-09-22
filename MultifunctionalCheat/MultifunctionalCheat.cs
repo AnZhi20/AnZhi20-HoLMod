@@ -68,7 +68,9 @@ namespace MultifunctionalCheat
             PluginMain.城中商铺兑换元宝上限 = base.Config.Bind<int>("倍率调整", "城中商铺兑换元宝上限倍数", 1, "所有城中每个商铺可兑换元宝上限=钱庄等级*10*城中商铺兑换元宝上限倍数，填1为不修改");
             PluginMain.科举人数上限 = base.Config.Bind<int>("倍率调整", "科举人数上限倍数", 1, "科举可选人数上限=家族等级*科举人数上限倍数，填1为不修改");
             PluginMain.最大子嗣上限 = base.Config.Bind<int>("倍率调整", "最大子嗣上限倍数", 1, "每个女性可以生的子嗣上限=1（或2）*最大子嗣上限倍数，填1为不修改");
-            
+            PluginMain.最小生育年龄 = base.Config.Bind<int>("数值调整", "最小生育年龄", 18, "女性NPC生育的最小年龄，影响幽会偷情和随机怀孕事件");
+            PluginMain.最大生育年龄 = base.Config.Bind<int>("数值调整", "最大生育年龄", 50, "女性NPC生育的最大年龄，影响幽会偷情和随机怀孕事件");
+
             // 保存当前版本号
             base.Config.Bind("内部配置（Internal Settings）", "已加载版本（Loaded Version）", CURRENT_VERSION, "用于跟踪插件版本，请勿手动修改");
             
@@ -188,6 +190,14 @@ namespace MultifunctionalCheat
             return false;
         }
 
+
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(Mainload), "LoadData")]
+        public static void UpdatePregnancyAge()
+        {
+            Mainload.OldShengYu = new List<int> { PluginMain.最小生育年龄.Value, PluginMain.最大生育年龄.Value };
+        }
+
         
         public static ConfigEntry<int> 城中可招门客上限倍数;
         public static ConfigEntry<int> 城中可建民居上限倍数;
@@ -196,6 +206,7 @@ namespace MultifunctionalCheat
         public static ConfigEntry<int> 城中商铺兑换元宝上限;
         public static ConfigEntry<int> 科举人数上限;
         public static ConfigEntry<int> 最大子嗣上限;
-       
+        public static ConfigEntry<int> 最小生育年龄;
+        public static ConfigEntry<int> 最大生育年龄;
     }
 }
