@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reflection;
-using UnityEngine;
 using BepInEx;
-using BepInEx.Configuration;
-using BepInEx.Logging;
+using UnityEngine;
 
 namespace cs.HoLMod.Tool
 {

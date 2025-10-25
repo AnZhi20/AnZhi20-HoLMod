@@ -1,10 +1,9 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
 using System.Reflection;
 using System.Text;
-using System.Collections;
-using System.Linq;
+using UnityEngine;
 
 namespace cs.HoLMod.Tool
 {
