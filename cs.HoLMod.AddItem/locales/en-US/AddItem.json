@@ -1,0 +1,95 @@
+﻿{
+  "Mod": {
+    "Name": "Item Adder",
+    "Author": "AnZhi20"
+  },
+  "Description": {
+    "1": "1. Please save the game before adding items for rollback",
+    "2": "2. Press F2 to show/hide window",
+    "3": "3. Switch modes: Items/Currency/Stories/Map",
+    "4": "4. Enter partial characters to search items",
+    "5": "5. Select item, choose/enter quantity, then click Add",
+    "6": "6. Note: Item addition cannot exceed the available inventory space."
+  },
+  "MenuTab": {
+    "Currency": "Currency",
+    "Items": "items",
+    "Map": "Map",
+    "Stories": "Stories"
+  },
+  "CurrencyClass": {
+    "Coins": "Coins",
+    "Gold": "Gold"
+  },
+  "PropClass": {
+    "Other": "Other",
+    "Special": "Special",
+    "Spell": "Spell",
+    "Snack": "Snack",
+    "Textile": "Textile",
+    "Mineral": "Mineral",
+    "Rouge": "Rouge",
+    "Jewelry": "Jewelry",
+    "Book": "Book",
+    "Ink": "Ink",
+    "Art": "Art",
+    "Antique": "Antique",
+    "Weapon": "Weapon",
+    "TeaSet": "TeaSet",
+    "Incense": "Incense",
+    "Vase": "Vase",
+    "Wine": "Wine",
+    "Music": "Music",
+    "Pelt": "Pelt",
+    "Poison": "Poison",
+    "Produce": "Produce",
+    "Medicine": "Medicine"
+  },
+  "Info": {
+    "Search": "Search: ",
+    "Category": "Category: ",
+    "Description": "Instructions: ",
+    "Count": "Count: ",
+    "CurrencyNow": {
+      "Coins": "Current Conis: {0}",
+      "Gold": "Current Gold: {0}"
+    },
+    "Selected": "Current Selected: ",
+    "Jun": "Select Jun: ",
+    "Xian": "Select Xian: ",
+    "Area": "Select Area: ",
+    "Name": "Name: ",
+    "NoName": "-None-"
+  },
+  "Button": {
+    "Add": "Add",
+    "Clear": "Clear"
+  },
+  "Error": {
+    "NoProp": "No matching item found"
+  },
+  "Tip": {
+    "AddItem": {
+      "Succeed": "Successfully added item [{0}] x{1}",
+      "Failed": "Failed to add item [{0}] x{1}"
+    },
+    "AddStories": {
+      "Succeed": "Storiesbook [{0}] added successfully",
+      "Failed": "Failed to add, storiesbook [{0}] already exists",
+      "None": "Failed to add, storiesbook [{0}] does not exist"
+    },
+    "SelectedNone": "Nothing selected to add. Please select first.",
+    "AddCoins": {
+      "Succeed": "Added {0} Coins"
+    },
+    "AddGold": {
+      "Succeed": "Added {0} Gold"
+    }
+  },
+  "MapTab": {
+    "Mansion": "Mansion",
+    "Farm": "Farm",
+    "Fief": "Fief",
+    "Family": "Family"
+  }
+}

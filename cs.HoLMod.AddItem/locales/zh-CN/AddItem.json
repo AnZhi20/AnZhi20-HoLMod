@@ -1,0 +1,95 @@
+﻿{
+  "Mod": {
+    "Name": "物品添加器",
+    "Author": "AnZhi20"
+  },
+  "Description": {
+    "1": "1. 请在点击添加前先保存游戏，以便回档",
+    "2": "2. 按F2键显示/隐藏窗口",
+    "3": "3. 切换模式选择：物品模式/货币模式/话本模式/地图模式",
+    "4": "4. 输入部分字符可搜索物品",
+    "5": "5. 选择项目并选择或输入数量后点击添加按钮",
+    "6": "6. 注意：物品添加不能超过库存上限"
+  },
+  "MenuTab": {
+    "Currency": "货币",
+    "Items": "物品",
+    "Map": "地图",
+    "Stories": "话本"
+  },
+  "CurrencyClass": {
+    "Coins": "铜钱",
+    "Gold": "元宝"
+  },
+  "PropClass": {
+    "Other": "其他",
+    "Special": "特殊",
+    "Spell": "符咒",
+    "Snack": "美食",
+    "Textile": "布料",
+    "Mineral": "矿产",
+    "Rouge": "香粉",
+    "Jewelry": "珠宝",
+    "Book": "书籍",
+    "Ink": "书法",
+    "Art": "丹青",
+    "Antique": "文玩",
+    "Weapon": "武器",
+    "TeaSet": "茶具",
+    "Incense": "香具",
+    "Vase": "瓷器",
+    "Wine": "美酒",
+    "Music": "乐器",
+    "Pelt": "毛皮",
+    "Poison": "毒药",
+    "Produce": "农产",
+    "Medicine": "丹药"
+  },
+  "Info": {
+    "Search": "搜索: ",
+    "Category": "分类: ",
+    "Description": "使用说明: ",
+    "Count": "数量: ",
+    "CurrencyNow": {
+      "Coins": "当前铜钱: {0}",
+      "Gold": "当前元宝: {0}"
+    },
+    "Selected": "当前选中: ",
+    "Jun": "郡: ",
+    "Xian": "县: ",
+    "Area": "面积: ",
+    "Name": "名称(留空随机): ",
+    "NoName": "不可修改"
+  },
+  "Button": {
+    "Add": "添加",
+    "Clear": "清空"
+  },
+  "Error": {
+    "NoProp": "未找到匹配的物品"
+  },
+  "Tip": {
+    "AddItem": {
+      "Succeed": "添加物品【{0}】x{1}，成功",
+      "Failed": "添加物品【{0}】x{1}，失败"
+    },
+    "AddStories": {
+      "Succeed": "话本【{0}】添加成功",
+      "Failed": "添加失败，话本【{0}】已存在",
+      "None": "添加失败，话本【{0}】不存在"
+    },
+    "SelectedNone": "待添加为空，请先选择再添加",
+    "AddCoins": {
+      "Succeed": "已添加{0}铜钱"
+    },
+    "AddGold": {
+      "Succeed": "已添加{0}元宝"
+    }
+  },
+  "MapTab": {
+    "Mansion": "府邸",
+    "Farm": "农庄",
+    "Fief": "封地",
+    "Family": "世家"
+  }
+}

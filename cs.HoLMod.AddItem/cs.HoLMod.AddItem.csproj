@@ -1,24 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <OutputType>Library</OutputType>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <LangVersion>preview</LangVersion>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="BepInEx.Core" Version="5.4.21" />
-    <PackageReference Include="UnityEngine.Modules" Version="2020.1.14">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>compile</IncludeAssets>
-    </PackageReference>
+    <PackageReference Include="UnityEngine.Modules" Version="2020.1.14" IncludeAssets="compile" PrivateAssets="all"/>
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="Assembly-CSharp">
-      <HintPath>..\libs\Assembly-CSharp.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Assembly-CSharp-firstpass">
-      <HintPath>..\libs\Assembly-CSharp-firstpass.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
+    <Reference Include="Assembly-CSharp" HintPath="..\libs\Assembly-CSharp.dll" Private="False"/>
+    <Reference Include="Assembly-CSharp-firstpass" HintPath="..\libs\Assembly-CSharp-firstpass.dll" Private="False"/>
+    <Reference Include="YuanAPI" HintPath="..\libs\YuanAPI.dll" Private="False"/>
   </ItemGroup>
 </Project>
