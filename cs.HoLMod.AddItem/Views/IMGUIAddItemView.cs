@@ -154,8 +154,7 @@ public class IMGUIAddItemView : MonoBehaviour, IAddItemView
                 new Vector3(_scaleFactor, _scaleFactor, 1f));
 
             // 创建窗口（逻辑尺寸）
-            _windowRect = GUI.Window(0, _windowRect, DrawWindow, 
-                $"{_i18N.t("Mod.Name")} v{AddItem.VERSION} by:{_i18N.t("Mod.Author")}", GUI.skin.window);
+            _windowRect = GUI.Window(0, _windowRect, DrawWindow, "", GUI.skin.window);
             
             // 恢复原始矩阵
             GUI.matrix = guiMatrix;
@@ -168,6 +167,14 @@ public class IMGUIAddItemView : MonoBehaviour, IAddItemView
     private void DrawWindow(int windowID)
     {
         GUILayout.BeginVertical(GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true));
+        
+        // 固定标题置于最上方
+        GUILayout.BeginHorizontal(GUILayout.ExpandWidth(true));
+        GUILayout.FlexibleSpace();
+        GUILayout.Label($"{_i18N.t("Mod.Name")} v{AddItem.VERSION} by:{_i18N.t("Mod.Author")}", GUI.skin.box);
+        GUILayout.FlexibleSpace();
+        GUILayout.EndHorizontal();
+        GUILayout.Space(10f);
         
         // 菜单页面标签
         GUILayout.BeginHorizontal(GUILayout.ExpandWidth(true));
@@ -573,9 +580,9 @@ public class IMGUIAddItemView : MonoBehaviour, IAddItemView
     private static (string label, int value)[] _kQuickAdds =
     [
         ("1", 1),
-        ("100", 100),
-        ("1w", 10_000),
-        ("100w", 1_000_000),
+        ("1K", 1000),
+        ("1M", 1_000_000),
+        ("1B", 1_000_000_000),
         ("Max", int.MaxValue)
     ];
 

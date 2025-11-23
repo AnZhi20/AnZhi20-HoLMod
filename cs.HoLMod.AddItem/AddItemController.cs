@@ -49,7 +49,7 @@ public class AddItemController
                 count = _view.SelectedCurrency switch
                 {
                     CurrencyClass.Coins => Mathf.Clamp(count, 1, 1000000000),   // 10亿
-                    CurrencyClass.Gold => Mathf.Clamp(count, 1, 100000),        // 10万
+                    CurrencyClass.Gold => Mathf.Clamp(count, 1, 1000000),       // 100万
                     _ => throw new ArgumentOutOfRangeException(),
                 };
                 _view.CountInput = count.ToString();
@@ -63,6 +63,7 @@ public class AddItemController
                 _view.CountInput = "1";
                 break;
             case MenuTab.Map:
+                break;
             default:
                 throw new ArgumentOutOfRangeException();
         }
