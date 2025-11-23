@@ -134,8 +134,8 @@ public class AddItemModule : IAddItemModel
         
         var mansionData = new List<string>
         {
-            $"{junId}|{xianId}", // 0 位置
-            name,        // 1 名称
+            $"{junId}|{xianId}",                            // 0 位置
+            name,                                           // 1 名称
             "0", "0", "0", "0", "0", "0", "0", "0", "0",    // 2-10
             "1", "0", "0", "0", "0", "0", "0", "0",         // 11-18
             "0", "0", "0", "0", "0", "0", "0", "0",         // 19-26
