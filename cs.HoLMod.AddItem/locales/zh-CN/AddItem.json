@@ -1,4 +1,4 @@
-﻿{
+{
   "Mod": {
     "Name": "物品添加器",
     "Author": "AnZhi20"
@@ -12,11 +12,12 @@
     "6": "6. 注意：物品添加不能超过库存上限"
   },
   "MenuTab": {
-    "Currency": "货币",
-    "Items": "物品",
-    "Map": "地图",
-    "Stories": "话本"
-  },
+        "Currency": "货币",
+        "Items": "物品",
+        "Map": "地图",
+        "Stories": "话本",
+        "Horses": "马匹"
+    },
   "CurrencyClass": {
     "Coins": "铜钱",
     "Gold": "元宝"
@@ -69,27 +70,36 @@
     "NoProp": "未找到匹配的物品"
   },
   "Tip": {
-    "AddItem": {
-      "Succeed": "添加物品【{0}】x{1}，成功",
-      "Failed": "添加物品【{0}】x{1}，失败"
+        "AddItem": {
+            "Succeed": "添加物品【{0}】x{1}，成功",
+            "Failed": "添加物品【{0}】x{1}，失败"
+        },
+        "AddStories": {
+            "Succeed": "话本【{0}】添加成功",
+            "Failed": "添加失败，话本【{0}】已存在",
+            "None": "添加失败，话本【{0}】不存在"
+        },
+        "SelectedNone": "待添加为空，请先选择再添加",
+        "AddCoins": {
+            "Succeed": "已添加{0}铜钱"
+        },
+        "AddGold": {
+            "Succeed": "已添加{0}元宝"
+        },
+        "FarmToCemetery": "已将({0})的农庄改为墓地",
+        "Fief.AlreadyUnlocked": "{0}的封地已解锁，无需解锁",
+        "Fief.UnlockSucceed": "{0}的封地已解锁成功",
+        "Farm.AddSucceed": "已在({0})添加农庄",
+        "AddHorse": {
+            "Failed": "马匹添加失败，没有足够的马厩存放",
+            "Succeed": "马匹添加成功"
+        }
     },
-    "AddStories": {
-      "Succeed": "话本【{0}】添加成功",
-      "Failed": "添加失败，话本【{0}】已存在",
-      "None": "添加失败，话本【{0}】不存在"
-    },
-    "SelectedNone": "待添加为空，请先选择再添加",
-    "AddCoins": {
-      "Succeed": "已添加{0}铜钱"
-    },
-    "AddGold": {
-      "Succeed": "已添加{0}元宝"
-    }
-  },
   "MapTab": {
     "Mansion": "府邸",
     "Farm": "农庄",
     "Fief": "封地",
-    "Family": "世家"
+    "Clan": "世家",
+    "Cemetery": "墓地"
   }
 }

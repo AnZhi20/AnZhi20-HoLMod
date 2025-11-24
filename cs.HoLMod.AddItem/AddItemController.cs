@@ -85,6 +85,9 @@ public class AddItemController
                 CheckCountInput();
                 WhenAddStories();
                 break;
+            case MenuTab.Horses:
+                WhenAddHorses();
+                break;
             case MenuTab.Map:
                 WhenAddMaps();
                 break;
@@ -128,6 +131,16 @@ public class AddItemController
         _model.AddStoriesBook((int)_view.SelectedBookId);
     }
 
+    private void WhenAddHorses()
+    {
+        if (_view.SelectedHorseId == null)
+        {
+            MsgTool.TipMsg(_i18N.t("Tip.SelectedNone"));
+            return;
+        }
+        _model.AddHorse((int)_view.SelectedHorseId);
+    }
+
     private void WhenAddMaps()
     {
         var junId = _view.SelectedJunId;
@@ -149,8 +162,16 @@ public class AddItemController
             case MapTab.Fief:
                 _model.AddFief(junId);
                 break;
-            case MapTab.Family:
-                _model.AddFamily(junId, xianId);
+            case MapTab.Clan:
+                _model.AddClan(junId, xianId);
+                break;
+            case MapTab.Cemetery:
+                if (!CheckArea(area))
+                {
+                    MsgTool.TipMsg("无效面积");
+                    break;
+                }
+                _model.AddCemetery(junId, xianId, area, GetName());
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
@@ -178,7 +199,10 @@ public class AddItemController
                 name = RandName.GetNongZName();
                 break;
             case MapTab.Fief:
-            case MapTab.Family:
+            case MapTab.Clan:
+            case MapTab.Cemetery:
+                name = RandName.GetMudiName();
+                break;
             default:
                 throw new ArgumentOutOfRangeException();
         }

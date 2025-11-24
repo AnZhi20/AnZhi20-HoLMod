@@ -25,6 +25,9 @@ public interface IAddItemView
     // 话本相关
     int? SelectedBookId { get; set; }
     
+    // 马匹相关
+    int? SelectedHorseId { get; set; }
+    
     // 地图相关
     MapTab SelectedMap { get; set; }
     int SelectedJunId { get; set; }

@@ -13,6 +13,7 @@ public static class ItemData
     
     // 缓存需要处理的文本，避免多次处理
     internal static List<string> StoriesList;
+    internal static List<string> HorsesList;
     internal static List<string> JunList;
     internal static List<List<string>> XianList;
 
@@ -27,6 +28,14 @@ public static class ItemData
         {
             var str = i18N.t($"Text_AllXiQu.{i}").Split('|')[0];
             StoriesList.Add(str);
+        }
+
+        HorsesList = [];
+        var horsesCount = 10;
+        for (var i = 0; i < horsesCount; i++)
+        {
+            var str = $"{i}";
+            HorsesList.Add(str);
         }
 
         JunList = [];

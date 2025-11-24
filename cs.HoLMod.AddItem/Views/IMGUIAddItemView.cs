@@ -36,6 +36,9 @@ public class IMGUIAddItemView : MonoBehaviour, IAddItemView
     
     // 话本相关
     public int? SelectedBookId { get; set; }
+
+    // 马匹相关
+    public int? SelectedHorseId { get; set; }
     
     // 地图相关
     public MapTab SelectedMap { get; set; } = MapTab.Mansion;
@@ -198,6 +201,9 @@ public class IMGUIAddItemView : MonoBehaviour, IAddItemView
                 break;
             case MenuTab.Stories:
                 DrawAddStories();
+                break;
+            case MenuTab.Horses:
+                DrawAddHorses();
                 break;
             case MenuTab.Map:
                 DrawAddMaps();
@@ -368,6 +374,26 @@ public class IMGUIAddItemView : MonoBehaviour, IAddItemView
         GUILayout.EndVertical();
     }
 
+    private void DrawAddHorses()
+    {
+        // 马匹模式
+        GUILayout.BeginVertical(GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true));
+        _scrollPosition = GUILayout.BeginScrollView(_scrollPosition, 
+            GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true));
+            
+        // 创建马匹列表，根据语言显示对应文本
+        ItemData.HorsesList.ForEach((horse, index) =>
+        {
+            if (GUILayout.Button(horse, GUILayout.ExpandWidth(true)))
+            {
+                SelectedHorseId = index;
+            }
+        });
+            
+        GUILayout.EndScrollView();
+        GUILayout.EndVertical();
+    }
+
     [Flags]
     private enum MapPartFlag
     {
@@ -383,7 +409,8 @@ public class IMGUIAddItemView : MonoBehaviour, IAddItemView
         { MapTab.Mansion, MapPartFlag.Jun | MapPartFlag.Xian | MapPartFlag.Name },
         { MapTab.Farm , MapPartFlag.Jun | MapPartFlag.Xian | MapPartFlag.Area | MapPartFlag.Name },
         { MapTab.Fief , MapPartFlag.Jun},
-        { MapTab.Family, MapPartFlag.Jun | MapPartFlag.Xian },
+        { MapTab.Clan, MapPartFlag.Jun | MapPartFlag.Xian },
+        { MapTab.Cemetery, MapPartFlag.Jun | MapPartFlag.Xian | MapPartFlag.Area | MapPartFlag.Name },
     };
 
     private List<string> _mapArea = ["4", "9", "16", "25"];
@@ -514,6 +541,7 @@ public class IMGUIAddItemView : MonoBehaviour, IAddItemView
                 MenuTab.Currency => _i18N.t($"CurrencyClass.{SelectedCurrency.ToString()}"),
                 MenuTab.Items => SelectedPropId != null ? _vStr.t($"Text_AllProp.{SelectedPropId}") : "",
                 MenuTab.Stories => SelectedBookId != null ? ItemData.StoriesList[(int)SelectedBookId] : "",
+                MenuTab.Horses => SelectedHorseId != null ? ItemData.HorsesList[(int)SelectedHorseId] : "",
                 MenuTab.Map => GetSelectMap(),
                 _ => ""
             };
@@ -531,6 +559,7 @@ public class IMGUIAddItemView : MonoBehaviour, IAddItemView
                     GUILayout.Label(_i18N.t("Info.Count"), GUILayout.Width(100f));
                     CountInput = GUILayout.TextField(CountInput, GUILayout.ExpandWidth(true));
                     break;
+                case MenuTab.Horses:
                 case MenuTab.Map:
                     if ((_mapPartFlags[SelectedMap] & MapPartFlag.Name) == MapPartFlag.Name)
                     {

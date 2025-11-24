@@ -1,4 +1,4 @@
-﻿{
+{
   "Mod": {
     "Name": "Item Adder",
     "Author": "AnZhi20"
@@ -15,7 +15,8 @@
     "Currency": "Currency",
     "Items": "items",
     "Map": "Map",
-    "Stories": "Stories"
+    "Stories": "Stories",
+    "Horses": "Horses"
   },
   "CurrencyClass": {
     "Coins": "Coins",
@@ -69,27 +70,36 @@
     "NoProp": "No matching item found"
   },
   "Tip": {
-    "AddItem": {
-      "Succeed": "Successfully added item [{0}] x{1}",
-      "Failed": "Failed to add item [{0}] x{1}"
+        "AddItem": {
+            "Succeed": "Successfully added item [{0}] x{1}",
+            "Failed": "Failed to add item [{0}] x{1}"
+        },
+        "AddStories": {
+            "Succeed": "Storiesbook [{0}] added successfully",
+            "Failed": "Failed to add, storiesbook [{0}] already exists",
+            "None": "Failed to add, storiesbook [{0}] does not exist"
+        },
+        "SelectedNone": "Nothing selected to add. Please select first.",
+        "AddCoins": {
+            "Succeed": "Added {0} Coins"
+        },
+        "AddGold": {
+            "Succeed": "Added {0} Gold"
+        },
+        "FarmToCemetery": "Converted farmland at ({0}) to cemetery",
+        "Fief.AlreadyUnlocked": "The fief of {0} is already unlocked, no need to unlock",
+        "Fief.UnlockSucceed": "The fief of {0} has been successfully unlocked",
+        "Farm.AddSucceed": "Successfully added farm at ({0})",
+        "AddHorse": {
+            "Failed": "Failed to add horse, not enough stables to store",
+            "Succeed": "Successfully added horse"
+        }
     },
-    "AddStories": {
-      "Succeed": "Storiesbook [{0}] added successfully",
-      "Failed": "Failed to add, storiesbook [{0}] already exists",
-      "None": "Failed to add, storiesbook [{0}] does not exist"
-    },
-    "SelectedNone": "Nothing selected to add. Please select first.",
-    "AddCoins": {
-      "Succeed": "Added {0} Coins"
-    },
-    "AddGold": {
-      "Succeed": "Added {0} Gold"
-    }
-  },
-  "MapTab": {
+    "MapTab": {
     "Mansion": "Mansion",
     "Farm": "Farm",
     "Fief": "Fief",
-    "Family": "Family"
+    "Clan": "Clan",
+    "Cemetery": "Cemetery"
   }
 }

@@ -9,10 +9,17 @@
     <PackageReference Include="UnityEngine.Modules" Version="2020.1.14" IncludeAssets="compile" PrivateAssets="all" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="Assembly-CSharp" HintPath="..\libs\Assembly-CSharp.dll" Private="False" />
-    <Reference Include="Assembly-CSharp-firstpass" HintPath="..\libs\Assembly-CSharp-firstpass.dll" Private="False" />
+    <Reference Include="Assembly-CSharp">
+      <HintPath>..\..\..\吾今有世家\引用\Assembly-CSharp.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Assembly-CSharp-firstpass">
+      <HintPath>..\..\..\吾今有世家\引用\Assembly-CSharp-firstpass.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="UnityEngine.UI">
       <HintPath>..\..\..\吾今有世家\引用\UnityEngine.UI.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="YuanAPI" HintPath="..\libs\YuanAPI.dll" Private="False" />
   </ItemGroup>

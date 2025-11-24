@@ -5,5 +5,6 @@ public enum MapTab
     Mansion,
     Farm,
     Fief,
-    Family,     // 世家枚举，待修改
+    Clan,     // 世家枚举，已经从Family改为Clan
+    Cemetery, // 新增墓地枚举
 }

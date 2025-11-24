@@ -7,6 +7,9 @@ namespace cs.HoLMod.AddItem;
 
 public class AddItemModule : IAddItemModel
 {
+    // 随机数生成器
+    Random Random = new Random();
+
     # region IAddItemModel 实现
     
     public event Action OnFilteredPropsChanged;
@@ -124,6 +127,34 @@ public class AddItemModule : IAddItemModel
         return Mainload.XiQuHave_Now.Any(book => book[0] == bookIdStr);
     }
 
+    /// <summary>
+    /// 添加马匹
+    /// </summary>
+    /// <param name="UIId">UI ID</param>
+    public void AddHorse(int UIId)
+    {
+        if  (int.Parse(Mainload.FamilyData[6]) > 0)
+        {
+            Mainload.Horse_Have.Add(new List<string>
+			{
+				$"{UIId}",                          // 马匹的UIID，对应官方的预制件名称
+				"1",                                // 马匹的年龄，默认添加的均为1
+				Random.Next(10, 20).ToString(),     // 不知道用来干嘛的，先使用随机整数来赋值，至少还没出现Bug
+				"100",                              // 马匹的力量，默认添加的均为100
+				"100",                              // 马匹的速度，默认添加的均为100
+				"100",                              // 马匹的智商，默认添加的均为100
+				null                                // 马匹的主人，默认添加的均为null
+			});
+            Mainload.FamilyData[6] = (int.Parse(Mainload.FamilyData[6]) - 1).ToString();
+            ShowInfo(_i18N.t($"Tip.AddHorse.Succeed"));
+        }
+        else
+        {
+            ShowWarning(_i18N.t($"Tip.AddHorse.Failed"));
+        }
+        
+    }
+
     #region 地图添加
     
     // 公共接口方法
@@ -205,7 +236,7 @@ public class AddItemModule : IAddItemModel
             Mainload.ZhuangTou_now[0].Add(new List<List<string>>());
             Mainload.NongzHaveData.Add("0" + "|" + index);
             
-            ShowInfo($"已在({GetLocationName(junId, xianId)})添加农庄");
+            ShowInfo(_i18N.t("Tip.Farm.AddSucceed", GetLocationName(junId, xianId)));
             
             Mainload.SceneID = "Z|0|" + index;
         }
@@ -233,18 +264,96 @@ public class AddItemModule : IAddItemModel
         
         if (Mainload.Fengdi_now[++junId][0] == "1")
         {
-            ShowInfo($"{ItemData.JunList[junId]}的封地已解锁，无需解锁");
+            ShowInfo(_i18N.t("Tip.Fief.AlreadyUnlocked", ItemData.JunList[junId]));
         }
         else
         {
             Mainload.Fengdi_now[junId][0] = "1";
-            ShowInfo($"{ItemData.JunList[junId]}的封地已解锁成功");
+            ShowInfo(_i18N.t("Tip.Fief.UnlockSucceed", ItemData.JunList[junId]));
         }
     }
 
-    public void AddFamily(int junId, int xianId)
+    public void AddClan(int junId, int xianId)
     {
         ShowWarning("添加世家功能正在开发中");
+    }
+
+    public void AddCemetery(int junId, int xianId, string area, string name)
+    {
+        AddFarm(junId, xianId, area, name);
+        if (name != "null")
+		{
+			int num = int.Parse(Mainload.SceneID.Split(new char[]
+			{
+				'|'
+			})[1]);
+			int i = int.Parse(Mainload.SceneID.Split(new char[]
+			{
+				'|'
+			})[2]);
+			if (i < Mainload.Mudi_now[num].Count)
+			{
+				Mainload.Mudi_now[num][i] = new List<string>
+				{
+					Mainload.NongZ_now[num][i][4],
+					name,
+					Mainload.NongZ_now[num][i][5],
+					"0",
+					Mainload.Time_now[0].ToString() + "|" + Mainload.Time_now[1].ToString(),
+					"0",
+					"0",
+					"0",
+					"0",
+					"0"
+				};
+			}
+			else
+			{
+				int num2 = 0;
+				while (i >= Mainload.Mudi_now[num].Count)
+				{
+					Mainload.Mudi_now[num].Add(new List<string>());
+					num2++;
+				}
+				Mainload.Mudi_now[num][i] = new List<string>
+				{
+					Mainload.NongZ_now[num][i][4],
+					name,
+					Mainload.NongZ_now[num][i][5],
+					"0",
+					Mainload.Time_now[0].ToString() + "|" + Mainload.Time_now[1].ToString(),
+					"0",
+					"0",
+					"0",
+					"0",
+					"0"
+				};
+			}
+			Mainload.NongZ_now[num][i][0] = "-2";
+			Mainload.NongZ_now[num][i][8] = "2";
+			if (num == 0)
+			{
+				Mainload.NewCreateMudi.Add(Mainload.Mudi_now[num][i][0] + "|" + i.ToString());
+			}
+			for (int j = 0; j < Mainload.NongzHaveData.Count; j++)
+			{
+				if (Mainload.NongzHaveData[j] == num.ToString() + "|" + i.ToString())
+				{
+					Mainload.NongzHaveData.RemoveAt(j);
+					break;
+				}
+			}
+			Mainload.SceneID = "L|@|$".Replace("@", num.ToString()).Replace("$", i.ToString());
+			Mainload.isFNongZPanelOpen = false;
+			Mainload.isKuaiToSceneInit = true;
+			return;
+		}
+		Mainload.Tip_Show.Add(new List<string>
+		{
+			"1",
+			AllText.Text_TipShow[66][Mainload.SetData[4]]
+		});
+        ShowInfo(_i18N.t("Tip.FarmToCemetery", GetLocationName(junId, xianId)));
     }
     
     private static bool ValidateJunUnlocked(int junId)
