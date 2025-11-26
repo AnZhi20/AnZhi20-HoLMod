@@ -237,8 +237,16 @@ public class IMGUIAddItemView : MonoBehaviour, IAddItemView
             Event currentEvent = Event.current;
             if (currentEvent != null && (currentEvent.type == EventType.MouseMove || currentEvent.type == EventType.Repaint))
             {
-                // 检查鼠标是否在当前按钮上
-                if (buttonRect.Contains(currentEvent.mousePosition))
+                // 获取当前滚动视图的可见区域
+                Rect scrollViewRect = GUILayoutUtility.GetLastRect();
+                
+                // 计算有效的按钮边界，使用滚动视图的高度来限制按钮的有效边界
+                // 这样当鼠标移出滚动视图的可见区域时，悬浮窗会正确隐藏
+                
+                // 检查鼠标是否在当前按钮上，并且在滚动视图的有效区域内
+                if (buttonRect.Contains(currentEvent.mousePosition) && 
+                    currentEvent.mousePosition.y >= scrollViewRect.y && 
+                    currentEvent.mousePosition.y <= scrollViewRect.y + scrollViewRect.height)
                 {
                     HoveredPropId = propId;
                 }
@@ -717,27 +725,32 @@ public class IMGUIAddItemView : MonoBehaviour, IAddItemView
         
         // 创建话本列表，根据语言显示对应文本
         ItemData.StoriesList.ForEach((book, index) =>
-        {
-            string bookName = book;
-            Rect buttonRect = GUILayoutUtility.GetRect(new GUIContent(bookName), btgButtonStyle);
-            
-            // 处理按钮点击
-            if (GUI.Button(buttonRect, bookName, btgButtonStyle))
             {
-                SelectedBookId = index;
-            }
-            
-            // 直接在GUI渲染时检测鼠标悬浮，这能正确处理滚动视图中的坐标
-            Event currentEvent = Event.current;
-            if (currentEvent != null && (currentEvent.type == EventType.MouseMove || currentEvent.type == EventType.Repaint))
-            {
-                // 检查鼠标是否在当前按钮上
-                if (buttonRect.Contains(currentEvent.mousePosition))
+                string bookName = book;
+                Rect buttonRect = GUILayoutUtility.GetRect(new GUIContent(bookName), btgButtonStyle);
+                
+                // 处理按钮点击
+                if (GUI.Button(buttonRect, bookName, btgButtonStyle))
                 {
-                    HoveredStoryId = index;
+                    SelectedBookId = index;
                 }
-            }
-        });
+                
+                // 直接在GUI渲染时检测鼠标悬浮，这能正确处理滚动视图中的坐标
+                Event currentEvent = Event.current;
+                if (currentEvent != null && (currentEvent.type == EventType.MouseMove || currentEvent.type == EventType.Repaint))
+                {
+                    // 获取当前滚动视图的可见区域
+                    Rect scrollViewRect = GUILayoutUtility.GetLastRect();
+                    
+                    // 检查鼠标是否在当前按钮上，并且在滚动视图的有效区域内
+                    if (buttonRect.Contains(currentEvent.mousePosition) && 
+                        currentEvent.mousePosition.y >= scrollViewRect.y && 
+                        currentEvent.mousePosition.y <= scrollViewRect.y + scrollViewRect.height)
+                    {
+                        HoveredStoryId = index;
+                    }
+                }
+            });
             
         GUILayout.EndScrollView();
         GUILayout.EndVertical();
@@ -764,9 +777,28 @@ public class IMGUIAddItemView : MonoBehaviour, IAddItemView
         // 创建马匹列表，根据语言显示对应文本
         ItemData.HorsesList.ForEach((horse, index) =>
         {
-            if (GUILayout.Button(horse, btgButtonStyle, GUILayout.ExpandWidth(true)))
+            Rect buttonRect = GUILayoutUtility.GetRect(new GUIContent(horse), btgButtonStyle);
+            
+            // 处理按钮点击
+            if (GUI.Button(buttonRect, horse, btgButtonStyle))
             {
                 SelectedHorseId = index;
+            }
+            
+            // 直接在GUI渲染时检测鼠标悬浮，这能正确处理滚动视图中的坐标
+            Event currentEvent = Event.current;
+            if (currentEvent != null && (currentEvent.type == EventType.MouseMove || currentEvent.type == EventType.Repaint))
+            {
+                // 获取当前滚动视图的可见区域
+                Rect scrollViewRect = GUILayoutUtility.GetLastRect();
+                
+                // 检查鼠标是否在当前按钮上，并且在滚动视图的有效区域内
+                if (buttonRect.Contains(currentEvent.mousePosition) && 
+                    currentEvent.mousePosition.y >= scrollViewRect.y && 
+                    currentEvent.mousePosition.y <= scrollViewRect.y + scrollViewRect.height)
+                {
+                    // 这里可以添加一个HoveredHorseId属性，如果需要悬浮效果
+                }
             }
         });
             
