@@ -5,10 +5,19 @@ namespace cs.HoLMod.AddItem.Views;
 
 public class IFloatingView : MonoBehaviour
 {
+    // 物品悬浮窗相关字段
     private int? _selectedPropId;
     private Vector2 _mousePosition;
     private bool _isVisible;
     private Rect _windowRect = new Rect(0, 0, 200, 300);
+    
+    // 话本悬浮窗相关字段
+    private int? _selectedStoryId;
+    private bool _isStoryVisible;
+    private Rect _storyWindowRect = new Rect(0, 0, 300, 200);
+    private bool _showStoryToggleButton = false;
+    private Rect _storyToggleButtonRect = new Rect(10, 10, 30, 30);
+
     private Localization.LocalizationInstance _i18N;
     private Localization.LocalizationInstance _vStr;
     private bool _isInitialized;
@@ -143,36 +152,86 @@ public class IFloatingView : MonoBehaviour
         
         // 检查当前是否在Items标签页且菜单显示
         var addItemView = FindObjectOfType<IMGUIAddItemView>();
-        if (addItemView == null || !addItemView.ShowMenu || addItemView.PanelTab != MenuTab.Items)
+        if (addItemView == null || !addItemView.ShowMenu)
         {
             _isVisible = false;
+            _isStoryVisible = false;
+            _showStoryToggleButton = false;
             return;
         }
         
-        // 获取鼠标悬浮的物品ID
-        _selectedPropId = addItemView.HoveredPropId;
-        
-        // 更新鼠标位置
-        _mousePosition = Input.mousePosition;
-        _mousePosition.y = Screen.height - _mousePosition.y;
-        
-        // 如果鼠标悬浮在物品上，显示悬浮窗
-        _isVisible = _selectedPropId.HasValue;
-        
-        if (_isVisible)
+        // 物品悬浮窗逻辑
+        if (addItemView.PanelTab == MenuTab.Items)
         {
-            // 设置悬浮窗位置在鼠标旁边
-            _windowRect.x = _mousePosition.x + 20;
-            _windowRect.y = _mousePosition.y - 20;
+            _showStoryToggleButton = false;
+            // 获取鼠标悬浮的物品ID
+            _selectedPropId = addItemView.HoveredPropId;
             
-            // 确保悬浮窗不超出屏幕
-            _windowRect.x = Mathf.Clamp(_windowRect.x, 0, Screen.width - _windowRect.width);
-            _windowRect.y = Mathf.Clamp(_windowRect.y, 0, Screen.height - _windowRect.height);
+            // 更新鼠标位置
+            _mousePosition = Input.mousePosition;
+            _mousePosition.y = Screen.height - _mousePosition.y;
+            
+            // 如果鼠标悬浮在物品上，显示悬浮窗
+            _isVisible = _selectedPropId.HasValue;
+            _isStoryVisible = false;
+            
+            if (_isVisible)
+            {
+                // 设置悬浮窗位置在鼠标旁边
+                _windowRect.x = _mousePosition.x + 20;
+                _windowRect.y = _mousePosition.y - 20;
+                
+                // 确保悬浮窗不超出屏幕
+                _windowRect.x = Mathf.Clamp(_windowRect.x, 0, Screen.width - _windowRect.width);
+                _windowRect.y = Mathf.Clamp(_windowRect.y, 0, Screen.height - _windowRect.height);
+            }
+        }
+        // 话本悬浮窗逻辑
+        else if (addItemView.PanelTab == MenuTab.Stories)
+        {
+            _isVisible = false;
+            _showStoryToggleButton = true;
+            // 获取鼠标悬浮的话本ID
+            _selectedStoryId = addItemView.HoveredStoryId;
+            
+            // 更新鼠标位置
+            _mousePosition = Input.mousePosition;
+            _mousePosition.y = Screen.height - _mousePosition.y;
+            
+            // 更新话本悬浮窗位置和可见性
+            if (_selectedStoryId.HasValue)
+            {
+                _storyWindowRect.x = _mousePosition.x + 20;
+                _storyWindowRect.y = _mousePosition.y - 20;
+                
+                // 确保悬浮窗不超出屏幕
+                _storyWindowRect.x = Mathf.Clamp(_storyWindowRect.x, 0, Screen.width - _storyWindowRect.width);
+                _storyWindowRect.y = Mathf.Clamp(_storyWindowRect.y, 0, Screen.height - _storyWindowRect.height);
+                
+                // 当有话本ID时自动设置可见性为true（通过切换按钮控制）
+                _isStoryVisible = true;
+            }
+        }
+        else
+        {
+            _isVisible = false;
+            _isStoryVisible = false;
+            _showStoryToggleButton = false;
         }
     }
     
     private void OnGUI()
     {
+        // 绘制话本悬浮窗切换按钮
+        if (_showStoryToggleButton)
+        {
+            if (GUI.Button(_storyToggleButtonRect, _isStoryVisible ? "✓" : ""))
+            {
+                _isStoryVisible = !_isStoryVisible;
+            }
+        }
+        
+        // 绘制物品悬浮窗
         if (_isVisible && _selectedPropId.HasValue)
         {
             // 保存当前的GUI设置
@@ -206,6 +265,47 @@ public class IFloatingView : MonoBehaviour
             
             // 使用透明窗口样式创建窗口，保留拖动功能
             _windowRect = GUI.Window(12345, _windowRect, DrawFloatingWindow, "");
+            
+            // 恢复原始GUI设置
+            GUI.backgroundColor = originalBackgroundColor;
+            GUI.contentColor = originalContentColor;
+            GUI.skin.window = originalWindowStyle;
+        }
+        
+        // 绘制话本悬浮窗
+        if (_isStoryVisible && _selectedStoryId.HasValue)
+        {
+            // 保存当前的GUI设置
+            Color originalBackgroundColor = GUI.backgroundColor;
+            Color originalContentColor = GUI.contentColor;
+            GUIStyle originalWindowStyle = GUI.skin.window;
+            
+            // 创建透明窗口样式
+            GUIStyle transparentWindowStyle = new GUIStyle(GUI.skin.window);
+            transparentWindowStyle.normal.background = null;
+            transparentWindowStyle.border = new RectOffset(0, 0, 0, 0);
+            transparentWindowStyle.padding = new RectOffset(0, 0, 0, 0);
+            GUI.skin.window = transparentWindowStyle;
+            
+            // 设置为透明背景和白色内容
+            GUI.backgroundColor = Color.clear;
+            GUI.contentColor = Color.white;
+            
+            // 绘制自定义背景
+            if (_backgroundTexture != null)
+            {
+                GUI.DrawTexture(_storyWindowRect, _backgroundTexture, ScaleMode.StretchToFill);
+            }
+            else
+            {
+                // 如果纹理加载失败，使用默认背景色作为备选
+                GUI.backgroundColor = new Color(0.1f, 0.1f, 0.1f, 0.8f);
+                GUI.Box(_storyWindowRect, "");
+                GUI.backgroundColor = Color.clear;
+            }
+            
+            // 使用透明窗口样式创建窗口，保留拖动功能
+            _storyWindowRect = GUI.Window(12346, _storyWindowRect, DrawStoryFloatingWindow, "");
             
             // 恢复原始GUI设置
             GUI.backgroundColor = originalBackgroundColor;
@@ -380,7 +480,106 @@ public class IFloatingView : MonoBehaviour
         // 允许窗口拖动
         GUI.DragWindow(new Rect(0, 0, float.MaxValue, 20));
     }
+    
+    // 绘制话本悬浮窗内容
+    private void DrawStoryFloatingWindow(int windowID)
+    {
+        // 绘制内容区域背景
+        if (_contentTexture != null)
+        {
+            GUI.DrawTexture(new Rect(5, 5, _storyWindowRect.width - 10, _storyWindowRect.height - 10), _contentTexture, ScaleMode.StretchToFill);
+        }
+        
+        GUILayout.BeginArea(new Rect(10, 10, _storyWindowRect.width - 20, _storyWindowRect.height - 20));
 
+        if (!_selectedStoryId.HasValue)
+            return;
+
+        GUILayout.BeginVertical(GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true));
+
+        // 通过空行调整布局
+        GUILayout.Space(10f);
+
+        // 话本名称
+        string storyName = GetStoryName(_selectedStoryId.Value);
+        // 根据是否包含中文设置字体大小
+        GUIStyle nameStyle = new GUIStyle(_itemNameStyle);
+        nameStyle.fontSize = ContainsChinese(storyName) ? 20 : 16;
+        GUILayout.Label(storyName, nameStyle);
+        
+        // 绘制分割线
+        if (_lineTexture != null)
+        {
+            GUILayout.Space(5f);
+            // 创建无边框样式并设置颜色和居中对齐
+            GUIStyle lineStyle = new GUIStyle();
+            lineStyle.normal.background = null;
+            lineStyle.border = new RectOffset(0, 0, 0, 0);
+            lineStyle.margin = new RectOffset(0, 0, 0, 0);
+            lineStyle.padding = new RectOffset(0, 0, 0, 0);
+            lineStyle.alignment = TextAnchor.MiddleCenter;
+            // 设置颜色
+            GUI.color = new Color(226/255f, 141/255f, 120/255f);
+            GUILayout.Box(_lineTexture, lineStyle, GUILayout.Width(280), GUILayout.Height(20));
+            // 恢复颜色
+            GUI.color = Color.white;
+            GUILayout.Space(5f);
+        }
+        else
+        {
+            GUILayout.Space(10f);
+        }
+
+        // 话本描述
+        string storyDesc = GetStoryDescription(_selectedStoryId.Value);
+        GUIStyle descStyle = new GUIStyle(_contentTextStyle);
+        descStyle.fontSize = ContainsChinese(storyDesc) ? 18 : 16;
+        descStyle.wordWrap = true;
+        GUILayout.Label(storyDesc, descStyle);
+
+        GUILayout.EndVertical();
+        GUILayout.EndArea();
+
+        // 允许窗口拖动
+        GUI.DragWindow(new Rect(0, 0, float.MaxValue, 20));
+    }
+    
+    // 获取话本名称
+    private string GetStoryName(int storyId)
+    {
+        try
+        {
+            if (Mainload.XiQuID_Enter > storyId)
+            {
+                string[] storyInfo = AllText.Text_AllXiQu[Mainload.XiQuID_Enter][storyId].Split('|');
+                if (storyInfo.Length > 0)
+                {
+                    return storyInfo[0];
+                }
+            }
+        }
+        catch {}
+        return _vStr.t($"Text_AllXiQu.{storyId}").Split('|')[0];
+    }
+    
+    // 获取话本描述
+    private string GetStoryDescription(int storyId)
+    {
+        try
+        {
+            if (Mainload.XiQuID_Enter > storyId)
+            {
+                string[] storyInfo = AllText.Text_AllXiQu[Mainload.XiQuID_Enter][storyId].Split('|');
+                if (storyInfo.Length > 1)
+                {
+                    return storyInfo[1];
+                }
+            }
+        }
+        catch {}
+        return _vStr.t($"Text_AllXiQu.{storyId}").Split('|')[1];
+    }
+    
     /// <summary>
     /// 绘制带符号的属性（正负值都显示）
     /// </summary>

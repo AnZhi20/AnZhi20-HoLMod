@@ -12,6 +12,7 @@ public class IMGUIAddItemView : MonoBehaviour, IAddItemView
     private Rect _windowRect;
     private Vector2 _scrollPosition; // 滚动位置
     private float _scaleFactor = 1.0f; // 分辨率缩放因子
+    private Texture2D _backgroundTexture; // 添加背景纹理变量
     
     #region 实现 IAddItemView
     
@@ -37,6 +38,7 @@ public class IMGUIAddItemView : MonoBehaviour, IAddItemView
     
     // 话本相关
     public int? SelectedBookId { get; set; }
+    public int? HoveredStoryId { get; set; }
 
     // 马匹相关
     public int? SelectedHorseId { get; set; }
@@ -84,6 +86,16 @@ public class IMGUIAddItemView : MonoBehaviour, IAddItemView
         _vStr = Localization.CreateInstance(@namespace: Localization.VanillaNamespace);
         
         _model = model;
+        
+        // 加载背景纹理 - 从DLL所在路径的Sprites文件夹加载
+        string texturePath = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(GetType().Assembly.Location), "Sprites", "PanelC.png");
+        
+        if (System.IO.File.Exists(texturePath))
+        {
+            _backgroundTexture = new Texture2D(2, 2);
+            byte[] fileData = System.IO.File.ReadAllBytes(texturePath);
+            _backgroundTexture.LoadImage(fileData);
+        }
         
         UpdateResolutionSettings();
     }
@@ -174,17 +186,28 @@ public class IMGUIAddItemView : MonoBehaviour, IAddItemView
     {
         if (!ShowMenu) return;
         
-        // 在每次GUI渲染周期开始时重置HoveredPropId，确保鼠标不在任何按钮上时悬浮窗会隐藏
+        // 在每次GUI渲染周期开始时重置悬浮状态，确保鼠标不在任何按钮上时悬浮窗会隐藏
         if (Event.current.type == EventType.Repaint)
         {
             HoveredPropId = null;
+            HoveredStoryId = null;
         }
         
-        // 保存窗口背景色并设置为半透明
+        // 保存原始GUI设置
         var originalBackgroundColor = GUI.backgroundColor;
-        GUI.backgroundColor = new Color(0.9f, 0.9f, 0.9f, 0.95f);
-
-        {
+        var originalWindowStyle = GUI.skin.window;
+        
+        // 创建透明窗口样式
+        GUIStyle transparentWindowStyle = new GUIStyle(GUI.skin.window);
+        transparentWindowStyle.normal.background = null;
+        transparentWindowStyle.border = new RectOffset(0, 0, 0, 0);
+        transparentWindowStyle.padding = new RectOffset(0, 0, 0, 0);
+        GUI.skin.window = transparentWindowStyle;
+        
+        // 设置为透明背景
+        GUI.backgroundColor = Color.clear;
+        
+        {  
             // 显示一个半透明的背景遮罩，防止操作游戏界面
             GUI.BeginGroup(new Rect(0, 0, Screen.width, Screen.height));
             GUI.color = new Color(0, 0, 0, 0.1f);
@@ -197,15 +220,27 @@ public class IMGUIAddItemView : MonoBehaviour, IAddItemView
             GUI.matrix = Matrix4x4.TRS(Vector3.zero, Quaternion.identity,
                 new Vector3(_scaleFactor, _scaleFactor, 1f));
 
-            // 创建窗口（逻辑尺寸）
-            _windowRect = GUI.Window(0, _windowRect, DrawWindow, "", GUI.skin.window);
+            // 绘制自定义背景
+            if (_backgroundTexture != null)
+            {
+                GUI.DrawTexture(_windowRect, _backgroundTexture, ScaleMode.StretchToFill);
+            }
+            else
+            {
+                // 如果纹理加载失败，使用默认背景色作为备选
+                GUI.backgroundColor = new Color(0.9f, 0.9f, 0.9f, 0.95f);
+            }
+            
+            // 创建窗口
+            _windowRect = GUI.Window(0, _windowRect, DrawWindow, "");
             
             // 恢复原始矩阵
             GUI.matrix = guiMatrix;
         }
         
-        // 恢复原始背景色
+        // 恢复原始GUI设置
         GUI.backgroundColor = originalBackgroundColor;
+        GUI.skin.window = originalWindowStyle;
     }
     
     private void DrawWindow(int windowID)
@@ -401,9 +436,24 @@ public class IMGUIAddItemView : MonoBehaviour, IAddItemView
         // 创建话本列表，根据语言显示对应文本
         ItemData.StoriesList.ForEach((book, index) =>
         {
-            if (GUILayout.Button(book, GUILayout.ExpandWidth(true)))
+            string bookName = book;
+            Rect buttonRect = GUILayoutUtility.GetRect(new GUIContent(bookName), GUI.skin.button);
+            
+            // 处理按钮点击
+            if (GUI.Button(buttonRect, bookName))
             {
                 SelectedBookId = index;
+            }
+            
+            // 直接在GUI渲染时检测鼠标悬浮，这能正确处理滚动视图中的坐标
+            Event currentEvent = Event.current;
+            if (currentEvent != null && (currentEvent.type == EventType.MouseMove || currentEvent.type == EventType.Repaint))
+            {
+                // 检查鼠标是否在当前按钮上
+                if (buttonRect.Contains(currentEvent.mousePosition))
+                {
+                    HoveredStoryId = index;
+                }
             }
         });
             
