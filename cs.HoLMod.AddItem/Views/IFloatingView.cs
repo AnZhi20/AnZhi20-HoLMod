@@ -222,15 +222,6 @@ public class IFloatingView : MonoBehaviour
     
     private void OnGUI()
     {
-        // 绘制话本悬浮窗切换按钮
-        if (_showStoryToggleButton)
-        {
-            if (GUI.Button(_storyToggleButtonRect, _isStoryVisible ? "✓" : ""))
-            {
-                _isStoryVisible = !_isStoryVisible;
-            }
-        }
-        
         // 绘制物品悬浮窗
         if (_isVisible && _selectedPropId.HasValue)
         {

@@ -13,6 +13,24 @@ public class IMGUIAddItemView : MonoBehaviour, IAddItemView
     private Vector2 _scrollPosition; // 滚动位置
     private float _scaleFactor = 1.0f; // 分辨率缩放因子
     private Texture2D _backgroundTexture; // 添加背景纹理变量
+    private Texture2D _instructionTexture; // 使用说明背景纹理
+    
+    // 按钮纹理
+    private Texture2D _biaoQianATexture; // 选中状态标签背景
+    private Texture2D _biaoQianBTexture; // 未选中状态标签背景
+    private Texture2D _btfTexture; // 普通按钮背景
+    private Texture2D _btgTexture; // List按钮背景
+    
+    // 字体资源
+    private Font _mediumFont; // SourceHanSansSC-Medium-2.otf
+    private Font _boldFont; // SourceHanSansSC-Bold-2.otf
+    private Texture2D _startBTATexture; // StartBTA按钮背景
+    
+    // 检测字符串是否包含中文字符
+    private bool ContainsChinese(string text)
+    {
+        return System.Text.RegularExpressions.Regex.IsMatch(text, @"[\u4e00-\u9fa5]");
+    }
     
     #region 实现 IAddItemView
     
@@ -87,8 +105,12 @@ public class IMGUIAddItemView : MonoBehaviour, IAddItemView
         
         _model = model;
         
-        // 加载背景纹理 - 从DLL所在路径的Sprites文件夹加载
-        string texturePath = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(GetType().Assembly.Location), "Sprites", "PanelC.png");
+        // DLL所在路径
+        string assemblyPath = System.Reflection.Assembly.GetExecutingAssembly().Location;
+        string dllDirectory = System.IO.Path.GetDirectoryName(assemblyPath);
+
+        // 加载背景纹理
+        string texturePath = System.IO.Path.Combine(dllDirectory, "Sprites", "PanelC.png");
         
         if (System.IO.File.Exists(texturePath))
         {
@@ -97,11 +119,60 @@ public class IMGUIAddItemView : MonoBehaviour, IAddItemView
             _backgroundTexture.LoadImage(fileData);
         }
         
+        // 加载StartBTA纹理用于使用说明背景
+        string startBTAPath = System.IO.Path.Combine(dllDirectory, "Sprites", "StartBTA.png");
+        if (System.IO.File.Exists(startBTAPath))
+        {
+            _startBTATexture = new Texture2D(2, 2);
+            byte[] fileData = System.IO.File.ReadAllBytes(startBTAPath);
+            _startBTATexture.LoadImage(fileData);
+        }
+        
+        // 加载按钮纹理
+        LoadButtonTexture(ref _biaoQianATexture, dllDirectory, "BiaoQianA.png");
+        LoadButtonTexture(ref _biaoQianBTexture, dllDirectory, "BiaoQianB.png");
+        LoadButtonTexture(ref _btfTexture, dllDirectory, "BTF.png");
+        LoadButtonTexture(ref _btgTexture, dllDirectory, "BTG.png");
+        
+        // 加载字体资源
+        LoadFont(ref _mediumFont, dllDirectory, System.IO.Path.Combine("Fonts", "SourceHanSansSC-Medium-2.otf"));
+        LoadFont(ref _boldFont, dllDirectory, System.IO.Path.Combine("Fonts", "SourceHanSansSC-Bold-2.otf"));
+        
         UpdateResolutionSettings();
+    }
+    
+    // 辅助方法：加载按钮纹理
+    private void LoadButtonTexture(ref Texture2D texture, string dllDirectory, string textureName)
+    {
+        string texturePath = System.IO.Path.Combine(dllDirectory, "Sprites", textureName);
+        
+        if (System.IO.File.Exists(texturePath))
+        {
+            texture = new Texture2D(2, 2);
+            byte[] fileData = System.IO.File.ReadAllBytes(texturePath);
+            texture.LoadImage(fileData);
+        }
+    }
+    
+    // 辅助方法：加载字体资源
+    private void LoadFont(ref Font font, string dllDirectory, string fontPath)
+    {
+        string fullFontPath = System.IO.Path.Combine(dllDirectory, fontPath);
+        
+        if (System.IO.File.Exists(fullFontPath))
+        {
+            // 使用Font.CreateDynamicFontFromOSFont加载字体，确保字体被标记为动态字体
+            font = Font.CreateDynamicFontFromOSFont(fullFontPath, 20);
+            
+            // 确保材质使用GUI/Text Shader
+            if (font.material != null)
+            {
+                font.material.shader = Shader.Find("GUI/Text Shader");
+            }
+        }
     }
 
 
-    
     private void Update()
     {
         // 按F2键切换窗口显示
@@ -144,10 +215,20 @@ public class IMGUIAddItemView : MonoBehaviour, IAddItemView
         private void DrawItemButton(int propId)
         {
             string itemName = _vStr.t($"Text_AllProp.{propId}");
-            Rect buttonRect = GUILayoutUtility.GetRect(new GUIContent(itemName), GUI.skin.button);
+            
+            // 创建按钮样式
+            GUIStyle btgButtonStyle = new GUIStyle(GUI.skin.button);
+            if (_btgTexture != null)
+            {
+                btgButtonStyle.normal.background = _btgTexture;
+            }
+            btgButtonStyle.normal.textColor = new Color(82/255f, 60/255f, 50/255f, 1.0f); // RGB:82,60,50
+            btgButtonStyle.alignment = TextAnchor.MiddleCenter;
+            
+            Rect buttonRect = GUILayoutUtility.GetRect(new GUIContent(itemName), btgButtonStyle);
             
             // 处理按钮点击
-            if (GUI.Button(buttonRect, itemName))
+            if (GUI.Button(buttonRect, itemName, btgButtonStyle))
             {
                 SelectedPropId = propId;
             }
@@ -220,10 +301,17 @@ public class IMGUIAddItemView : MonoBehaviour, IAddItemView
             GUI.matrix = Matrix4x4.TRS(Vector3.zero, Quaternion.identity,
                 new Vector3(_scaleFactor, _scaleFactor, 1f));
 
-            // 绘制自定义背景
+            // 绘制背景纹理，并添加边距，上下预留40f，左右预留20f
             if (_backgroundTexture != null)
             {
-                GUI.DrawTexture(_windowRect, _backgroundTexture, ScaleMode.StretchToFill);
+                // 计算带边距的绘制区域
+                Rect drawRect = new Rect(
+                    _windowRect.x - 50f,  // 左边距20f
+                    _windowRect.y - 40f,  // 上边距40f
+                    _windowRect.width + 100f,  // 左右各20f，总共40f
+                    _windowRect.height + 80f  // 上下各40f，总共80f
+                );
+                GUI.DrawTexture(drawRect, _backgroundTexture, ScaleMode.StretchToFill);
             }
             else
             {
@@ -245,13 +333,78 @@ public class IMGUIAddItemView : MonoBehaviour, IAddItemView
     
     private void DrawWindow(int windowID)
     {
+        // 创建全局的bold字体样式 - 根据是否包含中文设置不同大小
+        GUIStyle boldLabelStyle = new GUIStyle(GUI.skin.label);
+        if (_boldFont != null)
+        {
+            boldLabelStyle.font = _boldFont;
+            // 大多数标签使用这个样式，根据是否包含中文设置字体大小
+              string sampleText = _i18N.t("Info.Category");
+              boldLabelStyle.fontSize = ContainsChinese(sampleText) ? 18 : 16;
+        }
+        else
+        {
+            boldLabelStyle.fontSize = 18;
+        }
+        
+        GUIStyle boldButtonStyle = new GUIStyle(GUI.skin.button);
+        if (_boldFont != null)
+        {
+            boldButtonStyle.font = _boldFont;
+            // 按钮文字也根据是否包含中文设置字体大小
+              string sampleText = _i18N.t("Button.Clear");
+              boldButtonStyle.fontSize = ContainsChinese(sampleText) ? 18 : 16;
+        }
+        else
+        {
+            boldButtonStyle.fontSize = 18;
+        }
+        
+        // 应用全局样式（除了已经特殊设置的标题样式）
+        GUI.skin.label = boldLabelStyle;
+        GUI.skin.button = boldButtonStyle;
+        
         GUILayout.BeginVertical(GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true));
         
         // 固定标题置于最上方
         GUILayout.BeginHorizontal(GUILayout.ExpandWidth(true));
         GUILayout.FlexibleSpace();
-        GUILayout.Label($"{_i18N.t("Mod.Name")} v{AddItem.VERSION} by:{_i18N.t("Mod.Author")}");
+        
+        // 创建标题样式 - 使用medium字体，根据是否包含中文设置不同大小
+        GUIStyle titleStyle = new GUIStyle(GUI.skin.label);
+        
+        string titleText = $"{_i18N.t("Mod.Name")}";
+        string subheadingText = $"v{AddItem.VERSION} by:{_i18N.t("Mod.Author")}";
+        if (_mediumFont != null)
+        {
+            titleStyle.font = _mediumFont;
+            // 根据是否包含中文设置字体大小
+            titleStyle.fontSize = ContainsChinese(titleText) ? 38 : 28;
+            // 设置标题居中对齐和字体颜色（RGB:161,80,80）
+            titleStyle.alignment = TextAnchor.MiddleCenter;
+            titleStyle.normal.textColor = new Color(0.6314f, 0.3137f, 0.3137f, 1.0f); // RGB:161,80,80
+        }
+        else
+        {
+            titleStyle.fontSize = 38;
+            // 设置标题居中对齐和字体颜色（RGB:161,80,80）
+            titleStyle.alignment = TextAnchor.MiddleCenter;
+            titleStyle.normal.textColor = new Color(0.6314f, 0.3137f, 0.3137f, 1.0f); // RGB:161,80,80
+        }
+        
+        GUILayout.Label(titleText, titleStyle);
         GUILayout.FlexibleSpace();
+        GUILayout.EndHorizontal();
+        
+        // 副标题换行并靠右对齐
+        GUILayout.BeginHorizontal(GUILayout.ExpandWidth(true));
+        GUILayout.FlexibleSpace();
+        // 为副标题创建右对齐样式
+        GUIStyle subheadingStyle = new GUIStyle(titleStyle);
+        subheadingStyle.fontSize = ContainsChinese(subheadingText) ? 30 : 24;
+        subheadingStyle.alignment = TextAnchor.MiddleRight;
+        subheadingStyle.normal.textColor = new Color(0.6314f, 0.3137f, 0.3137f, 1.0f); // RGB:161,80,80
+        GUILayout.Label(subheadingText, subheadingStyle);
         GUILayout.EndHorizontal();
         GUILayout.Space(10f);
         
@@ -259,7 +412,20 @@ public class IMGUIAddItemView : MonoBehaviour, IAddItemView
         GUILayout.BeginHorizontal(GUILayout.ExpandWidth(true));
         Enum.GetNames(typeof(MenuTab)).ForEach((key, index) =>
         {
-            if (GUILayout.Button($"{_i18N.t("MenuTab." + key)}", GUILayout.ExpandWidth(true)))
+            // 创建按钮样式
+            GUIStyle buttonStyle = new GUIStyle(GUI.skin.button);
+            // 设置按钮背景纹理
+            buttonStyle.normal.background = (_biaoQianBTexture != null) ? _biaoQianBTexture : null;
+            // 如果是当前选中的标签，使用选中状态的背景
+            if ((MenuTab)index == PanelTab && _biaoQianATexture != null)
+            {
+                buttonStyle.normal.background = _biaoQianATexture;
+            }
+            // 设置文字颜色和居中
+            buttonStyle.normal.textColor = new Color(82/255f, 60/255f, 50/255f, 1.0f); // RGB:82,60,50
+            buttonStyle.alignment = TextAnchor.MiddleCenter;
+            
+            if (GUILayout.Button($"{_i18N.t("MenuTab." + key)}", buttonStyle, GUILayout.ExpandWidth(true)))
                 PanelTab = (MenuTab)index;
         });
         GUILayout.EndHorizontal();
@@ -301,9 +467,41 @@ public class IMGUIAddItemView : MonoBehaviour, IAddItemView
         {
             GUILayout.BeginVertical();
             
-            GUILayout.Label(_i18N.t("Info.Description"), GUI.skin.box);
-            for (var i = 1; i <= 6; i++)
-                GUILayout.Label(_i18N.t($"Description.{i}"));
+            // 创建无边框样式并使用StartBTA.png作为背景
+            GUIStyle instructionStyle = new GUIStyle();
+            if (_startBTATexture != null)
+            {
+                instructionStyle.normal.background = _startBTATexture;
+            }
+            instructionStyle.border = new RectOffset(0, 0, 0, 0);
+            instructionStyle.margin = new RectOffset(0, 0, 0, 0);
+            instructionStyle.padding = new RectOffset(10, 10, 10, 10);
+            instructionStyle.alignment = TextAnchor.MiddleLeft; // 靠左对齐
+            
+            // 使用_mediumFont字体并根据是否包含中文设置不同大小（中文24，非中文20）
+            instructionStyle.font = _mediumFont;
+            string descriptionText = _i18N.t("Info.Description");
+            instructionStyle.fontSize = ContainsChinese(descriptionText) ? 24 : 20;
+            
+            // 创建内容样式
+            GUIStyle contentStyle = new GUIStyle();
+            contentStyle.normal.textColor = new Color(0.6314f, 0.3137f, 0.3137f, 1.0f); // RGB:161,80,80
+            contentStyle.font = _mediumFont;
+            // 内容字体大小：中文20，非中文18
+            contentStyle.fontSize = 20;
+            // 注意：循环内会根据具体内容再次调整大小
+            
+            // 绘制使用说明标题和内容，设置字体颜色（RGB:161,80,80）
+            instructionStyle.normal.textColor = new Color(0.6314f, 0.3137f, 0.3137f, 1.0f); // RGB:161,80,80
+            GUILayout.Label(_i18N.t("Info.Description"), instructionStyle);
+            
+            // 绘制使用说明内容
+            for (var i = 1; i <= 6; i++) {
+                string contentText = _i18N.t($"Description.{i}");
+                // 根据内容是否包含中文设置字体大小（中文20，非中文18）
+                contentStyle.fontSize = ContainsChinese(contentText) ? 20 : 18;
+                GUILayout.Label(contentText, contentStyle);
+            }
             
             GUILayout.EndVertical();
         }
@@ -318,18 +516,39 @@ public class IMGUIAddItemView : MonoBehaviour, IAddItemView
     private void DrawAddCurrency()
     {
         // 货币类型选择
-        GUILayout.Label(_i18N.t("Info.Category"), GUILayout.Width(160f));
+        GUIStyle labelStyle = new GUIStyle();
+        labelStyle.normal.textColor = new Color(82/255f, 60/255f, 50/255f, 1.0f); // RGB:82,60,50
+        // 使用_mediumFont字体并根据是否包含中文设置不同大小
+        if (_mediumFont != null)
+        {
+            labelStyle.font = _mediumFont;
+            string categoryText = _i18N.t("Info.Category");
+            labelStyle.fontSize = ContainsChinese(categoryText) ? 18 : 16;
+        }
+        GUILayout.Label(_i18N.t("Info.Category"), labelStyle, GUILayout.Width(160f));
+        
+        // 创建按钮样式，使用BTF.png作为背景
+        GUIStyle btfButtonStyle = new GUIStyle(GUI.skin.button);
+        if (_btfTexture != null)
+        {
+            btfButtonStyle.normal.background = _btfTexture;
+            btfButtonStyle.active.background = _btfTexture;
+            btfButtonStyle.focused.background = _btfTexture;
+            btfButtonStyle.hover.background = _btfTexture;
+        }
+        btfButtonStyle.normal.textColor = new Color(82/255f, 60/255f, 50/255f, 1.0f); // RGB:82,60,50
+        btfButtonStyle.alignment = TextAnchor.MiddleCenter;
         
         GUILayout.BeginVertical();
         _scrollPosition = GUILayout.BeginScrollView(_scrollPosition,
             GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true));
         
         GUILayout.BeginHorizontal();
-        if (GUILayout.Button(_i18N.t("CurrencyClass.Coins"), GUILayout.Width(160f)))
+        if (GUILayout.Button(_i18N.t("CurrencyClass.Coins"), btfButtonStyle, GUILayout.Width(160f)))
         {
             SelectedCurrency = CurrencyClass.Coins;
         }
-        if (GUILayout.Button(_i18N.t("CurrencyClass.Gold"), GUILayout.Width(160f)))
+        if (GUILayout.Button(_i18N.t("CurrencyClass.Gold"), btfButtonStyle, GUILayout.Width(160f)))
         {
             SelectedCurrency = CurrencyClass.Gold;
         }
@@ -342,9 +561,18 @@ public class IMGUIAddItemView : MonoBehaviour, IAddItemView
         
         // 当前货币数量显示
         GUILayout.BeginVertical(GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true));
-        GUILayout.Label(_i18N.t("Info.CurrencyNow.Coins",  FormulaData.GetCoinsNum()),
+        GUIStyle currencyLabelStyle = new GUIStyle();
+        currencyLabelStyle.normal.textColor = new Color(82/255f, 60/255f, 50/255f, 1.0f); // RGB:82,60,50
+        // 使用_mediumFont字体并根据是否包含中文设置不同大小
+        if (_mediumFont != null)
+        {
+            currencyLabelStyle.font = _mediumFont;
+            string currencyText = _i18N.t("Info.CurrencyNow.Coins");
+            currencyLabelStyle.fontSize = ContainsChinese(currencyText) ? 18 : 16;
+        }
+        GUILayout.Label(_i18N.t("Info.CurrencyNow.Coins",  FormulaData.GetCoinsNum()), currencyLabelStyle,
             GUILayout.ExpandWidth(true));
-        GUILayout.Label(_i18N.t("Info.CurrencyNow.Gold", args: Mainload.CGNum[1]), 
+        GUILayout.Label(_i18N.t("Info.CurrencyNow.Gold", args: Mainload.CGNum[1]), currencyLabelStyle,
             GUILayout.ExpandWidth(true));
         GUILayout.EndVertical();
     }
@@ -353,7 +581,16 @@ public class IMGUIAddItemView : MonoBehaviour, IAddItemView
     {
         {
             GUILayout.BeginHorizontal();
-            GUILayout.Label(_i18N.t("Info.Search"), GUILayout.Width(160f));
+            GUIStyle labelStyle = new GUIStyle();
+            labelStyle.normal.textColor = new Color(82/255f, 60/255f, 50/255f, 1.0f); // RGB:82,60,50
+            // 使用_mediumFont字体并根据是否包含中文设置不同大小
+                if (_mediumFont != null)
+                {
+                    labelStyle.font = _mediumFont;
+                    string searchText = _i18N.t("Info.Search");
+                    labelStyle.fontSize = ContainsChinese(searchText) ? 18 : 16;
+                }
+                GUILayout.Label(_i18N.t("Info.Search"), labelStyle, GUILayout.Width(160f));
             var newSearchText = GUILayout.TextField(SearchText, GUILayout.ExpandWidth(true));
             if (newSearchText != SearchText)
             {
@@ -368,10 +605,35 @@ public class IMGUIAddItemView : MonoBehaviour, IAddItemView
         // 物品分类按钮
         {
             GUILayout.BeginHorizontal();
+            GUIStyle labelStyle = new GUIStyle();
+            labelStyle.normal.textColor = new Color(82/255f, 60/255f, 50/255f, 1.0f); // RGB:82,60,50
+            // 使用_mediumFont字体并根据是否包含中文设置不同大小
+            if (_mediumFont != null)
+            {
+                labelStyle.font = _mediumFont;
+                string categoryText = _i18N.t("Info.Category");
+                labelStyle.fontSize = ContainsChinese(categoryText) ? 18 : 16;
+            }
             GUILayout.Label(_i18N.t("Info.Category")+
                             (SelectedPropClass != null ? _i18N.t($"PropClass.{SelectedPropClass.ToString()}") : ""),
-                GUILayout.Width(160f));
-            if (GUILayout.Button(_i18N.t("Button.Clear"), GUILayout.Width(120f)))
+                labelStyle, GUILayout.Width(160f));
+            // 创建按钮样式
+            GUIStyle btfButtonStyle = new GUIStyle(GUI.skin.button);
+            if (_btfTexture != null)
+            {
+                btfButtonStyle.normal.background = _btfTexture;
+            }
+            btfButtonStyle.normal.textColor = new Color(82/255f, 60/255f, 50/255f, 1.0f); // RGB:82,60,50
+            btfButtonStyle.alignment = TextAnchor.MiddleCenter;
+            // 使用_mediumFont字体并根据是否包含中文设置不同大小
+            string buttonText = _i18N.t("Button.Clear");
+            if (_mediumFont != null)
+            {
+                btfButtonStyle.font = _mediumFont;
+                btfButtonStyle.fontSize = ContainsChinese(buttonText) ? 18 : 16;
+            }
+            
+            if (GUILayout.Button(_i18N.t("Button.Clear"), btfButtonStyle, GUILayout.Width(120f)))
             {
                 SearchText = "";
                 SelectedPropClass = null;
@@ -385,7 +647,16 @@ public class IMGUIAddItemView : MonoBehaviour, IAddItemView
                 if (index == 0 || index % 5 == 2) 
                     GUILayout.BeginHorizontal();
 
-                if (GUILayout.Button(_i18N.t($"PropClass.{cate}"), 
+                // 创建按钮样式
+                GUIStyle btfButtonStyle = new GUIStyle(GUI.skin.button);
+                if (_btfTexture != null)
+                {
+                    btfButtonStyle.normal.background = _btfTexture;
+                }
+                btfButtonStyle.normal.textColor = new Color(82/255f, 60/255f, 50/255f, 1.0f); // RGB:82,60,50
+                btfButtonStyle.alignment = TextAnchor.MiddleCenter;
+                
+                if (GUILayout.Button(_i18N.t($"PropClass.{cate}"), btfButtonStyle,
                      GUILayout.Width(index < 2 ? 285f : 140f)))
                 {
                     SelectedPropClass = (PropClass)Enum.Parse(typeof(PropClass), cate);
@@ -433,14 +704,25 @@ public class IMGUIAddItemView : MonoBehaviour, IAddItemView
         _scrollPosition = GUILayout.BeginScrollView(_scrollPosition, 
             GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true));
             
+        // 创建使用BTG纹理的按钮样式
+        GUIStyle btgButtonStyle = new GUIStyle(GUI.skin.button);
+        if (_btgTexture != null)
+        {
+            btgButtonStyle.normal.background = _btgTexture;
+            btgButtonStyle.hover.background = _btgTexture;
+            btgButtonStyle.active.background = _btgTexture;
+        }
+        btgButtonStyle.normal.textColor = new Color(82/255f, 60/255f, 50/255f, 1.0f); // RGB:82,60,50
+        btgButtonStyle.alignment = TextAnchor.MiddleCenter;
+        
         // 创建话本列表，根据语言显示对应文本
         ItemData.StoriesList.ForEach((book, index) =>
         {
             string bookName = book;
-            Rect buttonRect = GUILayoutUtility.GetRect(new GUIContent(bookName), GUI.skin.button);
+            Rect buttonRect = GUILayoutUtility.GetRect(new GUIContent(bookName), btgButtonStyle);
             
             // 处理按钮点击
-            if (GUI.Button(buttonRect, bookName))
+            if (GUI.Button(buttonRect, bookName, btgButtonStyle))
             {
                 SelectedBookId = index;
             }
@@ -468,10 +750,21 @@ public class IMGUIAddItemView : MonoBehaviour, IAddItemView
         _scrollPosition = GUILayout.BeginScrollView(_scrollPosition, 
             GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true));
             
+        // 创建使用BTG纹理的按钮样式
+        GUIStyle btgButtonStyle = new GUIStyle(GUI.skin.button);
+        if (_btgTexture != null)
+        {
+            btgButtonStyle.normal.background = _btgTexture;
+            btgButtonStyle.hover.background = _btgTexture;
+            btgButtonStyle.active.background = _btgTexture;
+        }
+        btgButtonStyle.normal.textColor = new Color(82/255f, 60/255f, 50/255f, 1.0f); // RGB:82,60,50
+        btgButtonStyle.alignment = TextAnchor.MiddleCenter;
+        
         // 创建马匹列表，根据语言显示对应文本
         ItemData.HorsesList.ForEach((horse, index) =>
         {
-            if (GUILayout.Button(horse, GUILayout.ExpandWidth(true)))
+            if (GUILayout.Button(horse, btgButtonStyle, GUILayout.ExpandWidth(true)))
             {
                 SelectedHorseId = index;
             }
@@ -511,7 +804,21 @@ public class IMGUIAddItemView : MonoBehaviour, IAddItemView
             // 隐藏未做完的功能
             if(key == "Family") 
                 return;
-            if (GUILayout.Button(_i18N.t("MapTab." + key), GUILayout.ExpandWidth(true)))
+            
+            // 创建按钮样式
+            GUIStyle buttonStyle = new GUIStyle(GUI.skin.button);
+            // 设置按钮背景纹理
+            buttonStyle.normal.background = (_biaoQianBTexture != null) ? _biaoQianBTexture : null;
+            // 如果是当前选中的标签，使用选中状态的背景
+            if ((MapTab)index == SelectedMap && _biaoQianATexture != null)
+            {
+                buttonStyle.normal.background = _biaoQianATexture;
+            }
+            // 设置文字颜色和居中
+            buttonStyle.normal.textColor = new Color(82/255f, 60/255f, 50/255f, 1.0f); // RGB:82,60,50
+            buttonStyle.alignment = TextAnchor.MiddleCenter;
+            
+            if (GUILayout.Button(_i18N.t("MapTab." + key), buttonStyle, GUILayout.ExpandWidth(true)))
                 SelectedMap = (MapTab)index;
         });
         GUILayout.EndHorizontal();
@@ -525,7 +832,16 @@ public class IMGUIAddItemView : MonoBehaviour, IAddItemView
         // 郡
         if ((_mapPartFlags[SelectedMap] & MapPartFlag.Jun) == MapPartFlag.Jun)
         {
-            GUILayout.Label(_i18N.t("Info.Jun"), GUILayout.Width(160f));
+            GUIStyle labelStyle = new GUIStyle();
+              labelStyle.normal.textColor = new Color(82/255f, 60/255f, 50/255f, 1.0f); // RGB:82,60,50
+              // 使用_mediumFont字体并根据是否包含中文设置不同大小
+              if (_mediumFont != null)
+              {
+                  labelStyle.font = _mediumFont;
+                  string junText = _i18N.t("Info.Jun");
+                  labelStyle.fontSize = ContainsChinese(junText) ? 18 : 16;
+              }
+              GUILayout.Label(_i18N.t("Info.Jun"), labelStyle, GUILayout.Width(160f));
             
             var perLineBtn = 6;
             var maxBtn = ItemData.JunList.Count;
@@ -534,7 +850,16 @@ public class IMGUIAddItemView : MonoBehaviour, IAddItemView
                 if(index % perLineBtn == 0)
                     GUILayout.BeginHorizontal();
                 
-                if (GUILayout.Button(junName, GUILayout.Width(100f)))
+                // 创建按钮样式
+                GUIStyle btfButtonStyle = new GUIStyle(GUI.skin.button);
+                if (_btfTexture != null)
+                {
+                    btfButtonStyle.normal.background = _btfTexture;
+                }
+                btfButtonStyle.normal.textColor = new Color(82/255f, 60/255f, 50/255f, 1.0f); // RGB:82,60,50
+                btfButtonStyle.alignment = TextAnchor.MiddleCenter;
+                
+                if (GUILayout.Button(junName, btfButtonStyle, GUILayout.Width(100f)))
                 {
                     SelectedJunId = index;
                 }
@@ -548,7 +873,16 @@ public class IMGUIAddItemView : MonoBehaviour, IAddItemView
         if ((_mapPartFlags[SelectedMap] & MapPartFlag.Xian) == MapPartFlag.Xian)
         {
             GUILayout.Space(10f);
-            GUILayout.Label(_i18N.t("Info.Xian"), GUILayout.Width(160f));
+            GUIStyle labelStyle = new GUIStyle();
+              labelStyle.normal.textColor = new Color(82/255f, 60/255f, 50/255f, 1.0f); // RGB:82,60,50
+              // 使用_mediumFont字体并根据是否包含中文设置不同大小
+              if (_mediumFont != null)
+              {
+                  labelStyle.font = _mediumFont;
+                  string xianText = _i18N.t("Info.Xian");
+                  labelStyle.fontSize = ContainsChinese(xianText) ? 18 : 16;
+              }
+              GUILayout.Label(_i18N.t("Info.Xian"), labelStyle, GUILayout.Width(160f));
 
             var perLineBtn = 6;
             var maxBtn = ItemData.XianList[SelectedJunId].Count;
@@ -560,7 +894,16 @@ public class IMGUIAddItemView : MonoBehaviour, IAddItemView
                 if(index % perLineBtn == 0)
                     GUILayout.BeginHorizontal();
                     
-                if (GUILayout.Button(xianName, GUILayout.Width(100f)))
+                // 创建按钮样式
+                GUIStyle btfButtonStyle = new GUIStyle(GUI.skin.button);
+                if (_btfTexture != null)
+                {
+                    btfButtonStyle.normal.background = _btfTexture;
+                }
+                btfButtonStyle.normal.textColor = new Color(82/255f, 60/255f, 50/255f, 1.0f); // RGB:82,60,50
+                btfButtonStyle.alignment = TextAnchor.MiddleCenter;
+                
+                if (GUILayout.Button(xianName, btfButtonStyle, GUILayout.Width(100f)))
                 {
                     SelectedXianId = index;
                 }
@@ -574,12 +917,30 @@ public class IMGUIAddItemView : MonoBehaviour, IAddItemView
         if ((_mapPartFlags[SelectedMap] & MapPartFlag.Area) == MapPartFlag.Area)
         {
             GUILayout.Space(10f);
-            GUILayout.Label(_i18N.t("Info.Area"), GUILayout.Width(160f));
+            GUIStyle labelStyle = new GUIStyle();
+              labelStyle.normal.textColor = new Color(82/255f, 60/255f, 50/255f, 1.0f); // RGB:82,60,50
+              // 使用_mediumFont字体并根据是否包含中文设置不同大小
+              if (_mediumFont != null)
+              {
+                  labelStyle.font = _mediumFont;
+                  string areaText = _i18N.t("Info.Area");
+                  labelStyle.fontSize = ContainsChinese(areaText) ? 18 : 16;
+              }
+              GUILayout.Label(_i18N.t("Info.Area"), labelStyle, GUILayout.Width(160f));
             
             GUILayout.BeginHorizontal();
             _mapArea.ForEach(area =>
             {
-                if (GUILayout.Button(area, GUILayout.Width(100f)))
+                // 创建按钮样式
+                GUIStyle btfButtonStyle = new GUIStyle(GUI.skin.button);
+                if (_btfTexture != null)
+                {
+                    btfButtonStyle.normal.background = _btfTexture;
+                }
+                btfButtonStyle.normal.textColor = new Color(82/255f, 60/255f, 50/255f, 1.0f); // RGB:82,60,50
+                btfButtonStyle.alignment = TextAnchor.MiddleCenter;
+                
+                if (GUILayout.Button(area, btfButtonStyle, GUILayout.Width(100f)))
                 {
                     SelectedArea = area;
                 }
@@ -632,7 +993,16 @@ public class IMGUIAddItemView : MonoBehaviour, IAddItemView
                 MenuTab.Map => GetSelectMap(),
                 _ => ""
             };
-            GUILayout.Label($"{_i18N.t("Info.Selected")}{text}", GUILayout.ExpandWidth(true));
+            GUIStyle labelStyle = new GUIStyle();
+                labelStyle.normal.textColor = new Color(82/255f, 60/255f, 50/255f, 1.0f); // RGB:82,60,50
+                // 使用_mediumFont字体并根据是否包含中文设置不同大小
+                if (_mediumFont != null)
+                {
+                    labelStyle.font = _mediumFont;
+                    string selectedText = _i18N.t("Info.Selected");
+                    labelStyle.fontSize = ContainsChinese(selectedText) ? 18 : 16;
+                }
+                GUILayout.Label($"{_i18N.t("Info.Selected")}{text}", labelStyle, GUILayout.ExpandWidth(true));
 
             GUILayout.Space(6f);
 
@@ -643,14 +1013,25 @@ public class IMGUIAddItemView : MonoBehaviour, IAddItemView
                 case MenuTab.Currency:
                 case MenuTab.Items:
                 case MenuTab.Stories:
-                    GUILayout.Label(_i18N.t("Info.Count"), GUILayout.Width(100f));
+                    GUIStyle countLabelStyle = new GUIStyle();
+                    countLabelStyle.normal.textColor = new Color(82/255f, 60/255f, 50/255f, 1.0f); // RGB:82,60,50
+                    // 使用_mediumFont字体并根据是否包含中文设置不同大小
+                    if (_mediumFont != null)
+                    {
+                        countLabelStyle.font = _mediumFont;
+                        string countText = _i18N.t("Info.Count");
+                        countLabelStyle.fontSize = ContainsChinese(countText) ? 18 : 16;
+                    }
+                    GUILayout.Label(_i18N.t("Info.Count"), countLabelStyle, GUILayout.Width(100f));
                     CountInput = GUILayout.TextField(CountInput, GUILayout.ExpandWidth(true));
                     break;
                 case MenuTab.Horses:
                 case MenuTab.Map:
                     if ((_mapPartFlags[SelectedMap] & MapPartFlag.Name) == MapPartFlag.Name)
                     {
-                        GUILayout.Label(_i18N.t("Info.Name"), GUILayout.Width(100f));
+                        GUIStyle nameLabelStyle = new GUIStyle();
+                        nameLabelStyle.normal.textColor = new Color(82/255f, 60/255f, 50/255f, 1.0f); // RGB:82,60,50
+                        GUILayout.Label(_i18N.t("Info.Name"), nameLabelStyle, GUILayout.Width(100f));
                         NameInput = GUILayout.TextField(NameInput, GUILayout.ExpandWidth(true));
                     }
                     else
@@ -680,7 +1061,22 @@ public class IMGUIAddItemView : MonoBehaviour, IAddItemView
             GUILayout.Space(15f);
             GUILayout.BeginHorizontal();
             GUILayout.FlexibleSpace();
-            if (GUILayout.Button(_i18N.t("Button.Add"),
+            // 创建按钮样式
+            GUIStyle btfButtonStyle = new GUIStyle(GUI.skin.button);
+            if (_btfTexture != null)
+            {
+                btfButtonStyle.normal.background = _btfTexture;
+            }
+            btfButtonStyle.normal.textColor = new Color(82/255f, 60/255f, 50/255f, 1.0f); // RGB:82,60,50
+            btfButtonStyle.alignment = TextAnchor.MiddleCenter;
+            // 使用_mediumFont字体并设置大小为40
+            if (_mediumFont != null)
+            {
+                btfButtonStyle.font = _mediumFont;
+                btfButtonStyle.fontSize = 40;
+            }
+            
+            if (GUILayout.Button(_i18N.t("Button.Add"), btfButtonStyle,
                     GUILayout.Width(180f), GUILayout.Height(80f)))
             {
                 OnAddButton?.Invoke();
@@ -706,7 +1102,16 @@ public class IMGUIAddItemView : MonoBehaviour, IAddItemView
     {
         foreach (var (label, value) in _kQuickAdds)
         {
-            if (GUILayout.Button(label, GUILayout.Width(80f), GUILayout.Height(36f)))
+            // 创建按钮样式
+            GUIStyle btfButtonStyle = new GUIStyle(GUI.skin.button);
+            if (_btfTexture != null)
+            {
+                btfButtonStyle.normal.background = _btfTexture;
+            }
+            btfButtonStyle.normal.textColor = new Color(82/255f, 60/255f, 50/255f, 1.0f); // RGB:82,60,50
+            btfButtonStyle.alignment = TextAnchor.MiddleCenter;
+            
+            if (GUILayout.Button(label, btfButtonStyle, GUILayout.Width(80f), GUILayout.Height(36f)))
             {
                 CountInput = value.ToString();
             }
