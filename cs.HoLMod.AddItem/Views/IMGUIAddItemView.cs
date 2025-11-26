@@ -33,6 +33,7 @@ public class IMGUIAddItemView : MonoBehaviour, IAddItemView
     public string SearchText { get; set; } = "";
     public PropClass? SelectedPropClass { get; set; }
     public int? SelectedPropId { get; set; }
+    public int? HoveredPropId { get; set; }
     
     // 话本相关
     public int? SelectedBookId { get; set; }
@@ -87,6 +88,8 @@ public class IMGUIAddItemView : MonoBehaviour, IAddItemView
         UpdateResolutionSettings();
     }
 
+
+    
     private void Update()
     {
         // 按F2键切换窗口显示
@@ -99,6 +102,11 @@ public class IMGUIAddItemView : MonoBehaviour, IAddItemView
                 UpdateResolutionSettings();
                 // 关闭地图面板，避免误操作
                 Mainload.isMapPanelOpen = false;
+            }
+            else
+            {
+                // 关闭窗口时清除悬浮状态
+                HoveredPropId = null;
             }
             
             AddItem.Logger.LogInfo($"物品添加器窗口已{(ShowMenu?"打开":"关闭")}" );
@@ -114,7 +122,35 @@ public class IMGUIAddItemView : MonoBehaviour, IAddItemView
         {
             Input.ResetInputAxes();
         }
+        
+
     }
+    
+
+    
+   // 绘制物品按钮并直接处理鼠标悬浮检测
+        private void DrawItemButton(int propId)
+        {
+            string itemName = _vStr.t($"Text_AllProp.{propId}");
+            Rect buttonRect = GUILayoutUtility.GetRect(new GUIContent(itemName), GUI.skin.button);
+            
+            // 处理按钮点击
+            if (GUI.Button(buttonRect, itemName))
+            {
+                SelectedPropId = propId;
+            }
+            
+            // 直接在GUI渲染时检测鼠标悬浮，这能正确处理滚动视图中的坐标
+            Event currentEvent = Event.current;
+            if (currentEvent != null && (currentEvent.type == EventType.MouseMove || currentEvent.type == EventType.Repaint))
+            {
+                // 检查鼠标是否在当前按钮上
+                if (buttonRect.Contains(currentEvent.mousePosition))
+                {
+                    HoveredPropId = propId;
+                }
+            }
+        }
     
     private static float _defaultWidth = 800f;
     private static float _defaultHeight = 1000f;
@@ -136,8 +172,13 @@ public class IMGUIAddItemView : MonoBehaviour, IAddItemView
     
     private void OnGUI()
     {
-        if (!ShowMenu)
-            return;
+        if (!ShowMenu) return;
+        
+        // 在每次GUI渲染周期开始时重置HoveredPropId，确保鼠标不在任何按钮上时悬浮窗会隐藏
+        if (Event.current.type == EventType.Repaint)
+        {
+            HoveredPropId = null;
+        }
         
         // 保存窗口背景色并设置为半透明
         var originalBackgroundColor = GUI.backgroundColor;
@@ -174,7 +215,7 @@ public class IMGUIAddItemView : MonoBehaviour, IAddItemView
         // 固定标题置于最上方
         GUILayout.BeginHorizontal(GUILayout.ExpandWidth(true));
         GUILayout.FlexibleSpace();
-        GUILayout.Label($"{_i18N.t("Mod.Name")} v{AddItem.VERSION} by:{_i18N.t("Mod.Author")}", GUI.skin.box);
+        GUILayout.Label($"{_i18N.t("Mod.Name")} v{AddItem.VERSION} by:{_i18N.t("Mod.Author")}");
         GUILayout.FlexibleSpace();
         GUILayout.EndHorizontal();
         GUILayout.Space(10f);
@@ -337,11 +378,7 @@ public class IMGUIAddItemView : MonoBehaviour, IAddItemView
             {
                 _model.FilteredProps.ForEach(propId =>
                 {
-                    if (GUILayout.Button(_vStr.t($"Text_AllProp.{propId}"), 
-                            GUI.skin.button, GUILayout.ExpandWidth(true)))
-                    {
-                        SelectedPropId = propId;
-                    }
+                    DrawItemButton(propId);
                 });
             }
             else

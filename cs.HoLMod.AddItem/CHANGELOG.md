@@ -6,7 +6,7 @@
 
 - 新增添加马匹功能。（Add the ability to add horses.）
 - 新增添加墓地功能。（Add the ability to add graves.）
-- 为更好全面兼容，新增了依赖：[YuanAPI](https://thunderstore.io/c/house-of-legacy/p/LymoneLM/YuanAPI/)
+- 为更好全面兼容，新增了依赖：[YuanAPI](https://thunderstore.io/c/house-of-legacy/p/LymoneLM/YuanAPI/)（For better comprehensive compatibility, dependencies have been added:[YuanAPI](https://thunderstore.io/c/house-of-legacy/p/LymoneLM/YuanAPI/)）
 
 ### v2.9.0
 

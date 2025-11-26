@@ -101,5 +101,8 @@
     "Fief": "封地",
     "Clan": "世家",
     "Cemetery": "墓地"
+  },
+  "FloatingView": {
+    "Price": "价格"
   }
 }

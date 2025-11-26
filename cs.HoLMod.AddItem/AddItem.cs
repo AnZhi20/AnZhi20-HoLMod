@@ -14,7 +14,7 @@ public class AddItem : BaseUnityPlugin
 {
     public const string MODGUID = "cs.HoLMod.AddItem.AnZhi20";
     public const string MODNAME = "HoLMod.AddItem";
-    public const string VERSION = "3.0.0";
+    public const string VERSION = "3.2.0";
     
     internal new static ManualLogSource Logger;
     internal static string LocaleNamespace = "AddItem";
@@ -68,6 +68,8 @@ public class AddItem : BaseUnityPlugin
         // 初始化View
         var obj = new GameObject("AddItemUI");
         obj.AddComponent<IMGUIAddItemView>();
+        // 添加悬浮窗组件
+        obj.AddComponent<cs.HoLMod.AddItem.Views.IFloatingView>();
         DontDestroyOnLoad(obj);
         _view = obj.GetComponent<IMGUIAddItemView>();
         _view.Initialize(_model);

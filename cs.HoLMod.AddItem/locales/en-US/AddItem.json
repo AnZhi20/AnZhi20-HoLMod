@@ -101,5 +101,8 @@
     "Fief": "Fief",
     "Clan": "Clan",
     "Cemetery": "Cemetery"
+  },
+  "FloatingView": {
+    "Price": "Price"
   }
 }
