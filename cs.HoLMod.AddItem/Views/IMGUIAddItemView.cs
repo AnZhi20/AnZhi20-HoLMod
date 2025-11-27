@@ -53,6 +53,8 @@ public class IMGUIAddItemView : MonoBehaviour, IAddItemView
     public PropClass? SelectedPropClass { get; set; }
     public int? SelectedPropId { get; set; }
     public int? HoveredPropId { get; set; }
+    float topY ;
+    float bottomY ;
     
     // 话本相关
     public int? SelectedBookId { get; set; }
@@ -212,38 +214,37 @@ public class IMGUIAddItemView : MonoBehaviour, IAddItemView
 
     
    // 绘制物品按钮并直接处理鼠标悬浮检测
-        private void DrawItemButton(int propId)
+    private void DrawItemButton(int propId)
+    {
+        string itemName = _vStr.t($"Text_AllProp.{propId}");
+            
+        // 创建按钮样式
+        GUIStyle btgButtonStyle = new GUIStyle(GUI.skin.button);
+        if (_btgTexture != null)
         {
-            string itemName = _vStr.t($"Text_AllProp.{propId}");
-            
-            // 创建按钮样式
-            GUIStyle btgButtonStyle = new GUIStyle(GUI.skin.button);
-            if (_btgTexture != null)
+            btgButtonStyle.normal.background = _btgTexture;
+        }
+        btgButtonStyle.normal.textColor = new Color(82/255f, 60/255f, 50/255f, 1.0f); // RGB:82,60,50
+        btgButtonStyle.alignment = TextAnchor.MiddleCenter;
+        
+        Rect buttonRect = GUILayoutUtility.GetRect(new GUIContent(itemName), btgButtonStyle);
+        
+        // 按钮点击
+        if (GUI.Button(buttonRect, itemName, btgButtonStyle))
+        {
+            SelectedPropId = propId;
+        }
+        
+        // 检测鼠标悬浮
+        Event currentEvent = Event.current;
+        if (currentEvent != null && (currentEvent.type == EventType.MouseMove || currentEvent.type == EventType.Repaint) )
+        {
+            if (buttonRect.Contains(currentEvent.mousePosition))
             {
-                btgButtonStyle.normal.background = _btgTexture;
-            }
-            btgButtonStyle.normal.textColor = new Color(82/255f, 60/255f, 50/255f, 1.0f); // RGB:82,60,50
-            btgButtonStyle.alignment = TextAnchor.MiddleCenter;
-            
-            Rect buttonRect = GUILayoutUtility.GetRect(new GUIContent(itemName), btgButtonStyle);
-            
-            // 处理按钮点击
-            if (GUI.Button(buttonRect, itemName, btgButtonStyle))
-            {
-                SelectedPropId = propId;
-            }
-            
-            // 直接在GUI渲染时检测鼠标悬浮，这能正确处理滚动视图中的坐标
-            Event currentEvent = Event.current;
-            if (currentEvent != null && (currentEvent.type == EventType.MouseMove || currentEvent.type == EventType.Repaint))
-            {
-                // 检查鼠标是否在当前按钮上
-                if (buttonRect.Contains(currentEvent.mousePosition))
-                {
-                    HoveredPropId = propId;
-                }
+                HoveredPropId = propId;
             }
         }
+    }
     
     private static float _defaultWidth = 800f;
     private static float _defaultHeight = 1000f;
@@ -306,9 +307,9 @@ public class IMGUIAddItemView : MonoBehaviour, IAddItemView
             {
                 // 计算带边距的绘制区域
                 Rect drawRect = new Rect(
-                    _windowRect.x - 50f,  // 左边距20f
+                    _windowRect.x - 50f,  // 左边距50f
                     _windowRect.y - 40f,  // 上边距40f
-                    _windowRect.width + 100f,  // 左右各20f，总共40f
+                    _windowRect.width + 100f,  // 左右各50f，总共100f
                     _windowRect.height + 80f  // 上下各40f，总共80f
                 );
                 GUI.DrawTexture(drawRect, _backgroundTexture, ScaleMode.StretchToFill);
@@ -359,6 +360,8 @@ public class IMGUIAddItemView : MonoBehaviour, IAddItemView
         {
             boldButtonStyle.fontSize = 18;
         }
+        // 确保按钮文本居中对齐
+        boldButtonStyle.alignment = TextAnchor.MiddleCenter;
         
         // 应用全局样式（除了已经特殊设置的标题样式）
         GUI.skin.label = boldLabelStyle;
@@ -374,19 +377,19 @@ public class IMGUIAddItemView : MonoBehaviour, IAddItemView
         GUIStyle titleStyle = new GUIStyle(GUI.skin.label);
         
         string titleText = $"{_i18N.t("Mod.Name")}";
-        string subheadingText = $"v{AddItem.VERSION} by:{_i18N.t("Mod.Author")}";
+        string subheadingText = $"{_i18N.t("Mod.VersionText")}{AddItem.VERSION}{_i18N.t("Mod.AuthorText")}{_i18N.t("Mod.Author")}";
         if (_mediumFont != null)
         {
             titleStyle.font = _mediumFont;
             // 根据是否包含中文设置字体大小
-            titleStyle.fontSize = ContainsChinese(titleText) ? 38 : 28;
+            titleStyle.fontSize = ContainsChinese(titleText) ? 30 : 28;
             // 设置标题居中对齐和字体颜色（RGB:161,80,80）
             titleStyle.alignment = TextAnchor.MiddleCenter;
             titleStyle.normal.textColor = new Color(0.6314f, 0.3137f, 0.3137f, 1.0f); // RGB:161,80,80
         }
         else
         {
-            titleStyle.fontSize = 38;
+            titleStyle.fontSize = 30;
             // 设置标题居中对齐和字体颜色（RGB:161,80,80）
             titleStyle.alignment = TextAnchor.MiddleCenter;
             titleStyle.normal.textColor = new Color(0.6314f, 0.3137f, 0.3137f, 1.0f); // RGB:161,80,80
@@ -401,12 +404,11 @@ public class IMGUIAddItemView : MonoBehaviour, IAddItemView
         GUILayout.FlexibleSpace();
         // 为副标题创建右对齐样式
         GUIStyle subheadingStyle = new GUIStyle(titleStyle);
-        subheadingStyle.fontSize = ContainsChinese(subheadingText) ? 30 : 24;
-        subheadingStyle.alignment = TextAnchor.MiddleRight;
+        subheadingStyle.fontSize = ContainsChinese(subheadingText) ? 24 : 22;
         subheadingStyle.normal.textColor = new Color(0.6314f, 0.3137f, 0.3137f, 1.0f); // RGB:161,80,80
         GUILayout.Label(subheadingText, subheadingStyle);
         GUILayout.EndHorizontal();
-        GUILayout.Space(10f);
+        GUILayout.Space(30f);
         
         // 菜单页面标签
         GUILayout.BeginHorizontal(GUILayout.ExpandWidth(true));
@@ -672,7 +674,10 @@ public class IMGUIAddItemView : MonoBehaviour, IAddItemView
         }
         
         GUILayout.Space(10f);
-         
+
+        // 记录滚动视图开始位置
+        float beforeScrollY = GUILayoutUtility.GetLastRect().y + GUILayoutUtility.GetLastRect().height;
+        
         // 物品列表滚动栏
         {
             GUILayout.BeginVertical(GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true));
@@ -694,6 +699,10 @@ public class IMGUIAddItemView : MonoBehaviour, IAddItemView
 
             GUILayout.EndScrollView();
             GUILayout.EndVertical();
+            
+            // 计算滚动视图的实际可见区域
+            topY = beforeScrollY;
+            bottomY = GUILayoutUtility.GetLastRect().y + GUILayoutUtility.GetLastRect().height;
         }
     }
 
@@ -731,7 +740,6 @@ public class IMGUIAddItemView : MonoBehaviour, IAddItemView
             Event currentEvent = Event.current;
             if (currentEvent != null && (currentEvent.type == EventType.MouseMove || currentEvent.type == EventType.Repaint))
             {
-                // 检查鼠标是否在当前按钮上
                 if (buttonRect.Contains(currentEvent.mousePosition))
                 {
                     HoveredStoryId = index;
@@ -802,7 +810,7 @@ public class IMGUIAddItemView : MonoBehaviour, IAddItemView
         Enum.GetNames(typeof(MapTab)).ForEach((key, index) =>
         {
             // 隐藏未做完的功能
-            if(key == "Family") 
+            if(key == "Clan") 
                 return;
             
             // 创建按钮样式
@@ -843,7 +851,7 @@ public class IMGUIAddItemView : MonoBehaviour, IAddItemView
               }
               GUILayout.Label(_i18N.t("Info.Jun"), labelStyle, GUILayout.Width(160f));
             
-            var perLineBtn = 6;
+            var perLineBtn = 5; // 每行5个按钮
             var maxBtn = ItemData.JunList.Count;
             ItemData.JunList.ForEach((junName, index) =>
             {
@@ -859,7 +867,7 @@ public class IMGUIAddItemView : MonoBehaviour, IAddItemView
                 btfButtonStyle.normal.textColor = new Color(82/255f, 60/255f, 50/255f, 1.0f); // RGB:82,60,50
                 btfButtonStyle.alignment = TextAnchor.MiddleCenter;
                 
-                if (GUILayout.Button(junName, btfButtonStyle, GUILayout.Width(100f)))
+                if (GUILayout.Button(junName, btfButtonStyle, GUILayout.Width(150f)))   // 改为150f
                 {
                     SelectedJunId = index;
                 }
@@ -884,7 +892,7 @@ public class IMGUIAddItemView : MonoBehaviour, IAddItemView
               }
               GUILayout.Label(_i18N.t("Info.Xian"), labelStyle, GUILayout.Width(160f));
 
-            var perLineBtn = 6;
+            var perLineBtn = 5; // 每行5个按钮
             var maxBtn = ItemData.XianList[SelectedJunId].Count;
             // 防错补丁
             if (SelectedXianId >= maxBtn)
@@ -903,7 +911,7 @@ public class IMGUIAddItemView : MonoBehaviour, IAddItemView
                 btfButtonStyle.normal.textColor = new Color(82/255f, 60/255f, 50/255f, 1.0f); // RGB:82,60,50
                 btfButtonStyle.alignment = TextAnchor.MiddleCenter;
                 
-                if (GUILayout.Button(xianName, btfButtonStyle, GUILayout.Width(100f)))
+                if (GUILayout.Button(xianName, btfButtonStyle, GUILayout.Width(150f)))   // 改为150f
                 {
                     SelectedXianId = index;
                 }
@@ -1027,16 +1035,16 @@ public class IMGUIAddItemView : MonoBehaviour, IAddItemView
                     break;
                 case MenuTab.Horses:
                 case MenuTab.Map:
+                    GUIStyle nameLabelStyle = new GUIStyle();
+                    nameLabelStyle.normal.textColor = new Color(82/255f, 60/255f, 50/255f, 1.0f); // RGB:82,60,50
                     if ((_mapPartFlags[SelectedMap] & MapPartFlag.Name) == MapPartFlag.Name)
                     {
-                        GUIStyle nameLabelStyle = new GUIStyle();
-                        nameLabelStyle.normal.textColor = new Color(82/255f, 60/255f, 50/255f, 1.0f); // RGB:82,60,50
                         GUILayout.Label(_i18N.t("Info.Name"), nameLabelStyle, GUILayout.Width(100f));
                         NameInput = GUILayout.TextField(NameInput, GUILayout.ExpandWidth(true));
                     }
                     else
                     {
-                        GUILayout.Label(_i18N.t("Info.Name"), GUILayout.Width(100f));
+                        GUILayout.Label(_i18N.t("Info.Name"), nameLabelStyle, GUILayout.Width(100f));
                         GUILayout.TextField(_i18N.t("Info.NoName"), GUILayout.ExpandWidth(true));
                     }
                     break;

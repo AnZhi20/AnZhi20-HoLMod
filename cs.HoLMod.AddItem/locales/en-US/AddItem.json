@@ -1,7 +1,9 @@
 {
   "Mod": {
     "Name": "Item Adder",
-    "Author": "AnZhi20"
+    "Author": "AnZhi20",
+    "VersionText": "Version:",
+    "AuthorText": "Author:"
   },
   "Description": {
     "1": "1. Please save the game before adding items for rollback",

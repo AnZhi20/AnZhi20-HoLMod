@@ -1,7 +1,9 @@
 {
   "Mod": {
     "Name": "物品添加器",
-    "Author": "AnZhi20"
+    "Author": "安知",
+    "VersionText": "版本:",
+    "AuthorText": "作者:"
   },
   "Description": {
     "1": "1. 请在点击添加前先保存游戏，以便回档",
