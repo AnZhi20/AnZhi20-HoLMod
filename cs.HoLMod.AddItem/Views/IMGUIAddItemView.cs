@@ -192,6 +192,7 @@ public class IMGUIAddItemView : MonoBehaviour, IAddItemView
             {
                 // 关闭窗口时清除悬浮状态
                 HoveredPropId = null;
+                HoveredStoryId = null;
             }
             
             AddItem.Logger.LogInfo($"物品添加器窗口已{(ShowMenu?"打开":"关闭")}" );
@@ -233,6 +234,7 @@ public class IMGUIAddItemView : MonoBehaviour, IAddItemView
         if (GUI.Button(buttonRect, itemName, btgButtonStyle))
         {
             SelectedPropId = propId;
+            HoveredPropId = null;
         }
         
         // 检测鼠标悬浮
@@ -734,6 +736,7 @@ public class IMGUIAddItemView : MonoBehaviour, IAddItemView
             if (GUI.Button(buttonRect, bookName, btgButtonStyle))
             {
                 SelectedBookId = index;
+                HoveredStoryId = null;
             }
             
             // 直接在GUI渲染时检测鼠标悬浮，这能正确处理滚动视图中的坐标
