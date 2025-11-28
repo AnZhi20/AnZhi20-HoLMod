@@ -242,11 +242,75 @@ public class IMGUIAddItemView : MonoBehaviour, IAddItemView
         Event currentEvent = Event.current;
         if (currentEvent != null && (currentEvent.type == EventType.MouseMove || currentEvent.type == EventType.Repaint) )
         {
-            if (buttonRect.Contains(currentEvent.mousePosition) &&
-                IFloatingView._mousePosition.y >= 380 &&
-                IFloatingView._mousePosition.y <= 780)
+            if ((float)Screen.width == 1280f && (float)Screen.height == 720f)
             {
-                HoveredPropId = propId;
+                if (Mainload.SetData[4] == 0)
+                {
+                    if (buttonRect.Contains(currentEvent.mousePosition) &&
+                    IFloatingView._mousePosition.y >= 235 &&
+                    IFloatingView._mousePosition.y <= 520)
+                    {
+                        HoveredPropId = propId;
+                    }
+                }
+                else
+                {
+                    if (buttonRect.Contains(currentEvent.mousePosition) &&
+                    IFloatingView._mousePosition.y >= 245 &&
+                    IFloatingView._mousePosition.y <= 530)
+                    {
+                        HoveredPropId = propId;
+                    }
+                }
+            }
+            else if ((float)Screen.width == 1920f && (float)Screen.height == 1080f)
+            {
+                if (Mainload.SetData[4] == 0)
+                {
+                    if (buttonRect.Contains(currentEvent.mousePosition) &&
+                    IFloatingView._mousePosition.y >= 350 &&
+                    IFloatingView._mousePosition.y <= 780)
+                    {
+                        HoveredPropId = propId;
+                    }
+                }
+                else
+                {
+                    if (buttonRect.Contains(currentEvent.mousePosition) &&
+                    IFloatingView._mousePosition.y >= 330 &&
+                    IFloatingView._mousePosition.y <= 800)
+                    {
+                        HoveredPropId = propId;
+                    }
+                }
+            }
+            else if ((float)Screen.width == 2560f && (float)Screen.height == 1440f)
+            {
+                if (Mainload.SetData[4] == 0)
+                {
+                    if (buttonRect.Contains(currentEvent.mousePosition) &&
+                    IFloatingView._mousePosition.y >= 470 &&
+                    IFloatingView._mousePosition.y <= 1050)
+                    {
+                        HoveredPropId = propId;
+                    }
+                }
+                else
+                {
+                    if (buttonRect.Contains(currentEvent.mousePosition) &&
+                    IFloatingView._mousePosition.y >= 450 &&
+                    IFloatingView._mousePosition.y <= 1060)
+                    {
+                        HoveredPropId = propId;
+                    }
+                }
+            }
+            else
+            {
+                if (buttonRect.Contains(currentEvent.mousePosition))
+                {
+                    HoveredPropId = propId;
+                }
             }
         }
     }
@@ -382,7 +446,7 @@ public class IMGUIAddItemView : MonoBehaviour, IAddItemView
         GUIStyle titleStyle = new GUIStyle(GUI.skin.label);
         
         string titleText = $"{_i18N.t("Mod.Name")}";
-        string subheadingText = $"{_i18N.t("Mod.VersionText")}{AddItem.VERSION}{_i18N.t("Mod.AuthorText")}{_i18N.t("Mod.Author")}";
+        string subheadingText = $"{_i18N.t("Mod.VersionText")}{AddItem.VERSION}   {_i18N.t("Mod.AuthorText")}{_i18N.t("Mod.Author")}";
         if (_mediumFont != null)
         {
             titleStyle.font = _mediumFont;
@@ -404,16 +468,18 @@ public class IMGUIAddItemView : MonoBehaviour, IAddItemView
         GUILayout.FlexibleSpace();
         GUILayout.EndHorizontal();
         
-        // 副标题换行并靠右对齐
+        // 副标题居中对齐（不自动换行）
         GUILayout.BeginHorizontal(GUILayout.ExpandWidth(true));
         GUILayout.FlexibleSpace();
-        // 为副标题创建右对齐样式
+        // 为副标题创建居中对齐样式
         GUIStyle subheadingStyle = new GUIStyle(titleStyle);
         subheadingStyle.fontSize = ContainsChinese(subheadingText) ? 24 : 22;
         subheadingStyle.normal.textColor = new Color(0.6314f, 0.3137f, 0.3137f, 1.0f); // RGB:161,80,80
-        GUILayout.Label(subheadingText, subheadingStyle);
+        subheadingStyle.alignment = TextAnchor.MiddleCenter; // 设置文本居中对齐
+        subheadingStyle.wordWrap = false; // 禁用自动换行
+        GUILayout.Label(subheadingText, subheadingStyle, GUILayout.ExpandWidth(false)); // 不扩展宽度
+        GUILayout.FlexibleSpace();
         GUILayout.EndHorizontal();
-        GUILayout.Space(30f);
         
         // 菜单页面标签
         GUILayout.BeginHorizontal(GUILayout.ExpandWidth(true));
