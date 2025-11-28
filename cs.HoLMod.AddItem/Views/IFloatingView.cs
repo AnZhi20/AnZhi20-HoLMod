@@ -7,7 +7,7 @@ public class IFloatingView : MonoBehaviour
 {
     // 物品悬浮窗相关字段
     private int? _selectedPropId;
-    private Vector2 _mousePosition;
+    public static Vector2 _mousePosition;
     private bool _isVisible;
     private Rect _windowRect = new Rect(0, 0, 200, 300);
     
@@ -168,8 +168,8 @@ public class IFloatingView : MonoBehaviour
             _selectedPropId = addItemView.HoveredPropId;
             
             // 更新鼠标位置
-            _mousePosition = Input.mousePosition;
-            _mousePosition.y = Screen.height - _mousePosition.y;
+            IFloatingView._mousePosition = Input.mousePosition;
+            IFloatingView._mousePosition.y = Screen.height - IFloatingView._mousePosition.y;
             
             // 如果鼠标悬浮在物品上，显示悬浮窗
             _isVisible = _selectedPropId.HasValue;
@@ -178,8 +178,8 @@ public class IFloatingView : MonoBehaviour
             if (_isVisible)
             {
                 // 设置悬浮窗位置在鼠标旁边
-                _windowRect.x = _mousePosition.x + 20;
-                _windowRect.y = _mousePosition.y - 20;
+                _windowRect.x = IFloatingView._mousePosition.x + 20;
+                _windowRect.y = IFloatingView._mousePosition.y - 20;
                 
                 // 确保悬浮窗不超出屏幕
                 _windowRect.x = Mathf.Clamp(_windowRect.x, 0, Screen.width - _windowRect.width);
@@ -195,14 +195,14 @@ public class IFloatingView : MonoBehaviour
             _selectedStoryId = addItemView.HoveredStoryId;
             
             // 更新鼠标位置
-            _mousePosition = Input.mousePosition;
-            _mousePosition.y = Screen.height - _mousePosition.y;
+            IFloatingView._mousePosition = Input.mousePosition;
+            IFloatingView._mousePosition.y = Screen.height - IFloatingView._mousePosition.y;
             
             // 更新话本悬浮窗位置和可见性
             if (_selectedStoryId.HasValue)
             {
-                _storyWindowRect.x = _mousePosition.x + 20;
-                _storyWindowRect.y = _mousePosition.y - 20;
+                _storyWindowRect.x = IFloatingView._mousePosition.x + 20;
+                _storyWindowRect.y = IFloatingView._mousePosition.y - 20;
                 
                 // 确保悬浮窗不超出屏幕
                 _storyWindowRect.x = Mathf.Clamp(_storyWindowRect.x, 0, Screen.width - _storyWindowRect.width);

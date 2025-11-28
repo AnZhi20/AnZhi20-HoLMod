@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using cs.HoLMod.AddItem.Views;
 using UnityEngine;
 using YuanAPI;
 
@@ -241,7 +242,9 @@ public class IMGUIAddItemView : MonoBehaviour, IAddItemView
         Event currentEvent = Event.current;
         if (currentEvent != null && (currentEvent.type == EventType.MouseMove || currentEvent.type == EventType.Repaint) )
         {
-            if (buttonRect.Contains(currentEvent.mousePosition))
+            if (buttonRect.Contains(currentEvent.mousePosition) &&
+                IFloatingView._mousePosition.y >= 380 &&
+                IFloatingView._mousePosition.y <= 780)
             {
                 HoveredPropId = propId;
             }
@@ -677,9 +680,6 @@ public class IMGUIAddItemView : MonoBehaviour, IAddItemView
         
         GUILayout.Space(10f);
 
-        // 记录滚动视图开始位置
-        float beforeScrollY = GUILayoutUtility.GetLastRect().y + GUILayoutUtility.GetLastRect().height;
-        
         // 物品列表滚动栏
         {
             GUILayout.BeginVertical(GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true));
@@ -701,10 +701,6 @@ public class IMGUIAddItemView : MonoBehaviour, IAddItemView
 
             GUILayout.EndScrollView();
             GUILayout.EndVertical();
-            
-            // 计算滚动视图的实际可见区域
-            topY = beforeScrollY;
-            bottomY = GUILayoutUtility.GetLastRect().y + GUILayoutUtility.GetLastRect().height;
         }
     }
 
