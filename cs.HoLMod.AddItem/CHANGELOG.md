@@ -1,3 +1,7 @@
+### v4.0.0
+
+- 重新设计所有的窗口界面。（Redesign all window interfaces.）
+
 ### v3.1.0
 
 - 修复bug：翻译出现错误导致无法打开窗口。（Fixed bug: Translation error preventing window from opening.）
@@ -14,7 +18,7 @@
 
 ### v2.8.0
 
-- 优化配置文件的相关逻辑。（Optimize the relevant logic of the configuration file.（
+- 优化配置文件的相关逻辑。（Optimize the relevant logic of the configuration file.）
 - 已兼容MOD：[NewItemsAddEquipments](https://thunderstore.io/c/house-of-legacy/p/AnZhi20/NewItemsAddEquipments/)（一个提供多种游戏内物品的mod）和[YuanAPI](https://thunderstore.io/c/house-of-legacy/p/LymoneLM/YuanAPI/)（一个库，后续所有通过这个库添加的新物品也都可以使用本mod进行添加）（Compatible with MOD: [NewItemAddEquipment](https://thunderstore.io/c/house-of-legacy/p/AnZhi20/NewItemsAddEquipments/) (a mod that provides multiple in-game items) and [YuanAPI](https://thunderstore.io/c/house-of-legacy/p/LymoneLM/YuanAPI/) (a library where all new items added through this library can also be added using this mod).）
 
 ### v2.7.0
