@@ -6,10 +6,12 @@ using BepInEx;
 using BepInEx.Configuration;
 using HarmonyLib;
 using UnityEngine;
+using System.Reflection;
+using System.IO;
 
 namespace MenKeConverter
 {
-    [BepInPlugin("cs.HoLMod.CustomGenerationMenKe.AnZhi20", "HoLMod.CustomGenerationMenKe", "1.3.0")]
+    [BepInPlugin("cs.HoLMod.CustomGenerationMenKe.AnZhi20", "HoLMod.CustomGenerationMenKe", "2.0.0")]
     public class CustomGenerationMenKe : BaseUnityPlugin
     {
         // 语言管理内部类
@@ -55,7 +57,7 @@ namespace MenKeConverter
                 {"Instruction5", "5. 输入要生成的门客数量|5. Enter the number of MenKe to generate"},
                 {"Instruction6", "6. 点击'实时添加到游戏'按钮直接添加到当前游戏中|6. Click 'Add to Game Now' button to add directly to the current game"},
                 {"Instruction7", "7. 本mod作者：AnZhi20|7. Mod author: AnZhi20"},
-                {"Instruction8", "8. 本mod版本：1.2.0|8. Mod version: 1.2.0"},
+                {"Instruction8", "8. 本mod版本：2.0.0|8. Mod version: 2.0.0"},
                 
                 // 天赋和技能
                 {"Empty", "空|None"},
@@ -112,6 +114,14 @@ namespace MenKeConverter
         private static bool showMenu = false;
         private static bool blockGameInput = false;
         private static Vector2 scrollPosition;
+        
+        // 纹理对象
+        private Texture2D backgroundTexture;
+        private Texture2D buttonTextureA;
+        private Texture2D buttonTextureB;
+        private Texture2D frameTextureC;
+        private Texture2D sureButtonTexture;
+        private Texture2D searchTexture;
         
         // 定义常量
         const string A1 = ",";
@@ -186,6 +196,19 @@ namespace MenKeConverter
             Logger.LogInfo("门客自定义生成器已加载！");
             // 初始化语言相关列表
             InitializeLanguageLists();
+
+            // DLL所在路径
+            // DLL所在路径
+            string assemblyPath = System.Reflection.Assembly.GetExecutingAssembly().Location;
+            string dllDirectory = System.IO.Path.GetDirectoryName(assemblyPath);
+            
+            // 加载纹理
+            backgroundTexture = LoadTexture(Path.Combine(dllDirectory, "Sprites", "Background.png"));
+            buttonTextureA = LoadTexture(Path.Combine(dllDirectory, "Sprites", "BiaoQianA.png"));
+            buttonTextureB = LoadTexture(Path.Combine(dllDirectory, "Sprites", "BiaoQianB.png"));
+            frameTextureC = LoadTexture(Path.Combine(dllDirectory, "Sprites", "KuangC.png"));
+            sureButtonTexture = LoadTexture(Path.Combine(dllDirectory, "Sprites", "SureButton.png"));
+            searchTexture = LoadTexture(Path.Combine(dllDirectory, "Sprites", "Search.png"));
             
             // 版本检查配置
             var loadedVersion = Config.Bind("内部配置（Internal Settings）", "已加载版本（Loaded Version）", "", "用于跟踪插件版本，请勿手动修改").Value;
@@ -253,12 +276,6 @@ namespace MenKeConverter
             {
                 CloseMenu();
             }
-            
-            // 阻止游戏输入
-            if (blockGameInput)
-            {
-                UnityEngine.Input.ResetInputAxes();
-            }
         }
         
         /// <summary>
@@ -279,54 +296,266 @@ namespace MenKeConverter
             blockGameInput = false;
         }
         
+        private Texture2D LoadTexture(string relativePath)
+        {            
+            string pluginPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            string texturePath = Path.Combine(pluginPath, relativePath);
+            
+            if (File.Exists(texturePath))
+            {                
+                try
+                {                    
+                    byte[] fileData = File.ReadAllBytes(texturePath);
+                    Texture2D texture = new Texture2D(2, 2);
+                    if (texture.LoadImage(fileData))
+                    {                        
+                        Logger.LogInfo($"Successfully loaded texture: {texturePath}");
+                        return texture;
+                    }                    
+                    else                    
+                    {                        
+                        Logger.LogError($"Failed to load image from file: {texturePath}");
+                    }                
+                }                
+                catch (Exception ex)                
+                {                    
+                    Logger.LogError($"Error loading texture {texturePath}: {ex.Message}");
+                }            
+            }
+            else            
+            {                
+                Logger.LogWarning($"Texture file not found: {texturePath}");
+            }
+            return null;
+        }
+        
         private void OnGUI()
         {
             if (showMenu)
             {
-                windowRect = UnityEngine.GUI.Window(0, windowRect, DrawWindow, LanguageManager.GetText("WindowTitle"), UnityEngine.GUI.skin.window);
+                // 确保窗口位置和大小有效
+                windowRect = new Rect(Mathf.Clamp(windowRect.x, 0, Screen.width - windowRect.width), 
+                                     Mathf.Clamp(windowRect.y, 0, Screen.height - windowRect.height),
+                                     windowRect.width, windowRect.height);
+                
+                // 绘制背景纹理，并添加边距
+                if (backgroundTexture != null)
+                {
+                    // 计算带边距的绘制区域
+                    Rect drawRect = new Rect(
+                        windowRect.x - 50f,         // 左边距50f
+                        windowRect.y - 40f,         // 上边距40f
+                        windowRect.width + 100f,    // 左右各50f，总共100f
+                        windowRect.height + 80f     // 上下各40f，总共80f
+                    );
+                    GUI.DrawTexture(drawRect, backgroundTexture, ScaleMode.StretchToFill);
+                }
+                else
+                {
+                    // 如果纹理加载失败，使用默认背景色作为备选
+                    GUI.backgroundColor = new Color(0.9f, 0.9f, 0.9f, 0.95f);
+                }
+                
+                // 创建无背景边框的窗口样式
+                GUIStyle windowStyle = new GUIStyle(GUI.skin.window);
+                windowStyle.normal.background = null; // 不使用默认背景
+                
+                // 使用自定义窗口样式创建窗口（只有边框）
+                windowRect = UnityEngine.GUI.Window(0, windowRect, DrawWindow, "", windowStyle);
             }
         }
         
         private void DrawWindow(int windowID)
-        {
+        {            
+            // 保存原始样式
+            GUIStyle originalWindowStyle = GUI.skin.window;
+            GUIStyle originalBoxStyle = GUI.skin.box;
+            GUIStyle originalButtonStyle = GUI.skin.button;
+            
+            // 允许窗口拖动
+            GUI.DragWindow(new Rect(0, 0, windowRect.width, windowRect.height));
+            
+            // 标题
+            GUIStyle titleStyle = new GUIStyle();
+            titleStyle.fontSize = 18;
+            titleStyle.fontStyle = FontStyle.Bold;
+            titleStyle.alignment = TextAnchor.MiddleCenter;
+            // 设置标题颜色为RGB:82,60,50（十六进制523C32）
+            titleStyle.normal.textColor = new Color(82f/255f, 60f/255f, 50f/255f, 1f);
+            UnityEngine.GUILayout.Label(LanguageManager.GetText("WindowTitle"), titleStyle, new UnityEngine.GUILayoutOption[] { UnityEngine.GUILayout.Height(50f) });
+
             UnityEngine.GUILayout.BeginVertical();
             UnityEngine.GUILayout.Space(10f);
             
             // 显示状态信息
-            UnityEngine.GUILayout.Label(LanguageManager.GetText("Status") + statusMessage, UnityEngine.GUI.skin.box, new UnityEngine.GUILayoutOption[] { UnityEngine.GUILayout.Height(50f) });
+            GUIStyle statusStyle = new GUIStyle(GUI.skin.box);
+            if (frameTextureC != null)
+            {                
+                statusStyle.normal.background = frameTextureC;
+            }
+            // 设置状态文本颜色为RGB:82,60,50（十六进制523C32）
+            statusStyle.normal.textColor = new Color(82f/255f, 60f/255f, 50f/255f, 1f);
+            UnityEngine.GUILayout.Label(LanguageManager.GetText("Status") + statusMessage, statusStyle, new UnityEngine.GUILayoutOption[] { UnityEngine.GUILayout.Height(50f) });
             UnityEngine.GUILayout.Space(10f);
+            
+            // 创建通用标签样式，文本颜色为RGB:82,60,50
+            GUIStyle labelStyle = new GUIStyle(GUI.skin.label);
+            labelStyle.normal.textColor = new Color(82f/255f, 60f/255f, 50f/255f, 1f);
             
             // 性别选择
             UnityEngine.GUILayout.BeginHorizontal();
-            UnityEngine.GUILayout.Label(LanguageManager.GetText("MenKeGender"), new UnityEngine.GUILayoutOption[] { UnityEngine.GUILayout.Width(80f) });
-            selectedSex = UnityEngine.GUILayout.Toolbar(selectedSex, new string[] { LanguageManager.GetText("Female"), LanguageManager.GetText("Male") });
+            UnityEngine.GUILayout.Label(LanguageManager.GetText("MenKeGender"), labelStyle, new UnityEngine.GUILayoutOption[] { UnityEngine.GUILayout.Width(80f) });
+            
+            // 分别为两个性别按钮创建样式
+            GUIStyle femaleButtonStyle = new GUIStyle(GUI.skin.button);
+            GUIStyle maleButtonStyle = new GUIStyle(GUI.skin.button);
+            // 设置按钮文本颜色为RGB:82,60,50（十六进制523C32）
+            femaleButtonStyle.normal.textColor = new Color(82f/255f, 60f/255f, 50f/255f, 1f);
+            femaleButtonStyle.hover.textColor = new Color(82f/255f, 60f/255f, 50f/255f, 1f);
+            maleButtonStyle.normal.textColor = new Color(82f/255f, 60f/255f, 50f/255f, 1f);
+            maleButtonStyle.hover.textColor = new Color(82f/255f, 60f/255f, 50f/255f, 1f);
+            
+            // 应用纹理
+            if (buttonTextureA != null)
+            {
+                // 默认使用buttonTextureA
+                femaleButtonStyle.normal.background = buttonTextureA;
+                femaleButtonStyle.hover.background = buttonTextureA;
+                maleButtonStyle.normal.background = buttonTextureA;
+                maleButtonStyle.hover.background = buttonTextureA;
+            }
+            
+            if (buttonTextureB != null)
+            {
+                // 选中状态使用buttonTextureB
+                if (selectedSex == 0) // 女
+                {
+                    femaleButtonStyle.normal.background = buttonTextureB;
+                }
+                else if (selectedSex == 1) // 男
+                {
+                    maleButtonStyle.normal.background = buttonTextureB;
+                }
+            }
+            
+            // 并排显示两个按钮
+            if (UnityEngine.GUILayout.Button(LanguageManager.GetText("Female"), femaleButtonStyle, new UnityEngine.GUILayoutOption[] { UnityEngine.GUILayout.Width(80f) }))
+            {
+                selectedSex = 0;
+            }
+            
+            if (UnityEngine.GUILayout.Button(LanguageManager.GetText("Male"), maleButtonStyle, new UnityEngine.GUILayoutOption[] { UnityEngine.GUILayout.Width(80f) }))
+            {
+                selectedSex = 1;
+            }
+            
             UnityEngine.GUILayout.EndHorizontal();
             UnityEngine.GUILayout.Space(10f);
             
             // 天赋选择
             UnityEngine.GUILayout.BeginHorizontal();
-            UnityEngine.GUILayout.Label(LanguageManager.GetText("MenKeTalent"), new UnityEngine.GUILayoutOption[] { UnityEngine.GUILayout.Width(80f) });
-            selectedAlent = UnityEngine.GUILayout.SelectionGrid(selectedAlent, Alent.ToArray(), 3);
+            UnityEngine.GUILayout.Label(LanguageManager.GetText("MenKeTalent"), labelStyle, new UnityEngine.GUILayoutOption[] { UnityEngine.GUILayout.Width(80f) });
+            
+            // 设置选择网格按钮样式
+            GUIStyle buttonStyleA = new GUIStyle(GUI.skin.button);
+            GUIStyle buttonStyleB = new GUIStyle(GUI.skin.button);
+            if (buttonTextureA != null)
+            {                
+                buttonStyleA.normal.background = buttonTextureA;
+                buttonStyleA.hover.background = buttonTextureA;
+            }
+            if (buttonTextureB != null)
+            {                
+                buttonStyleB.normal.background = buttonTextureB;
+                buttonStyleB.active.background = buttonTextureB;
+            }
+            // 设置按钮文本颜色为RGB:82,60,50（十六进制523C32）
+            buttonStyleA.normal.textColor = new Color(82f/255f, 60f/255f, 50f/255f, 1f);
+            buttonStyleA.hover.textColor = new Color(82f/255f, 60f/255f, 50f/255f, 1f);
+            buttonStyleB.normal.textColor = new Color(82f/255f, 60f/255f, 50f/255f, 1f);
+            buttonStyleB.active.textColor = new Color(82f/255f, 60f/255f, 50f/255f, 1f);
+            
+            // 自定义选择网格绘制
+            string[] talentOptions = Alent.ToArray();
+            UnityEngine.GUILayout.BeginVertical();
+            UnityEngine.GUILayout.BeginHorizontal();
+            for (int i = 0; i < talentOptions.Length; i++)
+            {                
+                if (i > 0 && i % 3 == 0)
+                {                    
+                    UnityEngine.GUILayout.EndHorizontal();
+                    UnityEngine.GUILayout.BeginHorizontal();
+                }
+                
+                GUIStyle currentStyle = (i == selectedAlent) ? buttonStyleB : buttonStyleA;
+                if (UnityEngine.GUILayout.Button(talentOptions[i], currentStyle, new UnityEngine.GUILayoutOption[] { UnityEngine.GUILayout.Width(80f) }))
+                {                    
+                    selectedAlent = i;
+                }
+            }
+            UnityEngine.GUILayout.EndHorizontal();
+            UnityEngine.GUILayout.EndVertical();
+            
             UnityEngine.GUILayout.EndHorizontal();
             UnityEngine.GUILayout.Space(10f);
             
             // 技能选择
             UnityEngine.GUILayout.BeginHorizontal();
-            UnityEngine.GUILayout.Label(LanguageManager.GetText("MenKeSkill"), new UnityEngine.GUILayoutOption[] { UnityEngine.GUILayout.Width(80f) });
-            selectedSkill = UnityEngine.GUILayout.SelectionGrid(selectedSkill, Skills.ToArray(), 3);
+            UnityEngine.GUILayout.Label(LanguageManager.GetText("MenKeSkill"), labelStyle, new UnityEngine.GUILayoutOption[] { UnityEngine.GUILayout.Width(80f) });
+            
+            // 自定义技能选择网格绘制
+            string[] skillOptions = Skills.ToArray();
+            UnityEngine.GUILayout.BeginVertical();
+            UnityEngine.GUILayout.BeginHorizontal();
+            for (int i = 0; i < skillOptions.Length; i++)
+            {                
+                if (i > 0 && i % 3 == 0)
+                {                    
+                    UnityEngine.GUILayout.EndHorizontal();
+                    UnityEngine.GUILayout.BeginHorizontal();
+                }
+                
+                GUIStyle currentStyle = (i == selectedSkill) ? buttonStyleB : buttonStyleA;
+                if (UnityEngine.GUILayout.Button(skillOptions[i], currentStyle, new UnityEngine.GUILayoutOption[] { UnityEngine.GUILayout.Width(80f) }))
+                {                    
+                    selectedSkill = i;
+                }
+            }
+            UnityEngine.GUILayout.EndHorizontal();
+            UnityEngine.GUILayout.EndVertical();
+            
             UnityEngine.GUILayout.EndHorizontal();
             UnityEngine.GUILayout.Space(10f);
             UnityEngine.GUILayout.BeginHorizontal();
-            UnityEngine.GUILayout.Label(LanguageManager.GetText("MenKeAge"), new UnityEngine.GUILayoutOption[] { UnityEngine.GUILayout.Width(80f) });
+            UnityEngine.GUILayout.Label(LanguageManager.GetText("MenKeAge"), labelStyle, new UnityEngine.GUILayoutOption[] { UnityEngine.GUILayout.Width(80f) });
             customAge = (int)UnityEngine.GUILayout.HorizontalSlider(customAge, 18, 60, new UnityEngine.GUILayoutOption[] { UnityEngine.GUILayout.Width(200f) });
-            UnityEngine.GUILayout.Label(customAge.ToString(), new UnityEngine.GUILayoutOption[] { UnityEngine.GUILayout.Width(40f) });
+            UnityEngine.GUILayout.Label(customAge.ToString(), labelStyle, new UnityEngine.GUILayoutOption[] { UnityEngine.GUILayout.Width(40f) });
             UnityEngine.GUILayout.EndHorizontal();
             UnityEngine.GUILayout.Space(10f);
             
             // 数量输入
             UnityEngine.GUILayout.BeginHorizontal();
-            UnityEngine.GUILayout.Label(LanguageManager.GetText("GenerateCount"), new UnityEngine.GUILayoutOption[] { UnityEngine.GUILayout.Width(80f) });
-            string countInput = UnityEngine.GUILayout.TextField(generateCount.ToString(), new UnityEngine.GUILayoutOption[] { UnityEngine.GUILayout.Width(100f) });
+            UnityEngine.GUILayout.Label(LanguageManager.GetText("GenerateCount"), labelStyle, new UnityEngine.GUILayoutOption[] { UnityEngine.GUILayout.Width(80f) });
+            
+            // 创建带Search.png背景的输入框样式
+            GUIStyle searchFieldStyle = new GUIStyle(GUI.skin.textField);
+            // 设置文本居中对齐
+            searchFieldStyle.alignment = TextAnchor.MiddleCenter;
+            if (searchTexture != null)
+            {                
+                searchFieldStyle.normal.background = searchTexture;
+                searchFieldStyle.normal.textColor = new Color(82f/255f, 60f/255f, 50f/255f, 1f);
+                searchFieldStyle.focused.textColor = new Color(82f/255f, 60f/255f, 50f/255f, 1f);
+                searchFieldStyle.focused.background = searchTexture;
+            }
+            else
+            {                
+                // 如果纹理加载失败，使用与图片完全相同的颜色
+                searchFieldStyle.normal.background = null;
+                searchFieldStyle.normal.textColor = new Color(82f/255f, 60f/255f, 50f/255f, 1f);
+            }
+            
+            string countInput = UnityEngine.GUILayout.TextField(generateCount.ToString(), searchFieldStyle, new UnityEngine.GUILayoutOption[] { UnityEngine.GUILayout.Width(100f) });
             if (int.TryParse(countInput, out int count))
             {
                 generateCount = UnityEngine.Mathf.Clamp(count, 1, 1000);
@@ -336,7 +565,14 @@ namespace MenKeConverter
             
 
             // 实时添加按钮
-            if (UnityEngine.GUILayout.Button(LanguageManager.GetText("AddToGame"), new UnityEngine.GUILayoutOption[] { UnityEngine.GUILayout.Height(40f) }))
+            GUIStyle sureButtonStyle = new GUIStyle(GUI.skin.button);
+            if (sureButtonTexture != null)
+            {                
+                sureButtonStyle.normal.background = sureButtonTexture;
+                sureButtonStyle.hover.background = sureButtonTexture;
+                sureButtonStyle.active.background = sureButtonTexture;
+            }
+            if (UnityEngine.GUILayout.Button(LanguageManager.GetText("AddToGame"), sureButtonStyle, new UnityEngine.GUILayoutOption[] { UnityEngine.GUILayout.Height(40f) }))
             {
                 if (generateCount < 1 || generateCount > 1000)
                 {
@@ -355,23 +591,47 @@ namespace MenKeConverter
             }
             UnityEngine.GUILayout.Space(20f);
             
-            // 使用说明
-            UnityEngine.GUILayout.Label(LanguageManager.GetText("Instructions"), UnityEngine.GUI.skin.box);
-            scrollPosition = UnityEngine.GUILayout.BeginScrollView(scrollPosition, new UnityEngine.GUILayoutOption[] { UnityEngine.GUILayout.Height(210f) });
-            UnityEngine.GUILayout.Label(LanguageManager.GetText("Instruction1"));
-            UnityEngine.GUILayout.Label(LanguageManager.GetText("Instruction2")); 
-            UnityEngine.GUILayout.Label(LanguageManager.GetText("Instruction3"));
-            UnityEngine.GUILayout.Label(LanguageManager.GetText("Instruction4"));
-            UnityEngine.GUILayout.Label(LanguageManager.GetText("Instruction5"));
-            UnityEngine.GUILayout.Label(LanguageManager.GetText("Instruction6"));
-            UnityEngine.GUILayout.Label(LanguageManager.GetText("Instruction7")); 
-            UnityEngine.GUILayout.Label(LanguageManager.GetText("Instruction8"));
+            // 使用说明 - 设置背景为KuangC.png
+            if (frameTextureC != null)
+            {                
+                // 创建自定义样式用于使用说明部分
+                GUIStyle instructionsStyle = new GUIStyle(GUI.skin.box);
+                instructionsStyle.normal.background = frameTextureC;
+                // 设置说明标题文本颜色为RGB:82,60,50（十六进制523C32）
+                instructionsStyle.normal.textColor = new Color(82f/255f, 60f/255f, 50f/255f, 1f);
+                
+                UnityEngine.GUILayout.Label(LanguageManager.GetText("Instructions"), instructionsStyle);
+                
+                // 为滚动视图创建自定义样式
+                GUIStyle scrollViewStyle = new GUIStyle();
+                scrollViewStyle.normal.background = frameTextureC;
+                scrollViewStyle.border = new RectOffset(10, 10, 10, 10);
+                // 设置滚动视图文本颜色为RGB:82,60,50（十六进制523C32）
+                scrollViewStyle.normal.textColor = new Color(82f/255f, 60f/255f, 50f/255f, 1f);
+                
+                scrollPosition = UnityEngine.GUILayout.BeginScrollView(scrollPosition, scrollViewStyle, new UnityEngine.GUILayoutOption[] { UnityEngine.GUILayout.Height(210f) });
+            }
+            else
+            {                
+                UnityEngine.GUILayout.Label(LanguageManager.GetText("Instructions"), UnityEngine.GUI.skin.box);
+                scrollPosition = UnityEngine.GUILayout.BeginScrollView(scrollPosition, new UnityEngine.GUILayoutOption[] { UnityEngine.GUILayout.Height(210f) });
+            }
+            UnityEngine.GUILayout.Label(LanguageManager.GetText("Instruction1"), labelStyle);
+            UnityEngine.GUILayout.Label(LanguageManager.GetText("Instruction2"), labelStyle); 
+            UnityEngine.GUILayout.Label(LanguageManager.GetText("Instruction3"), labelStyle);
+            UnityEngine.GUILayout.Label(LanguageManager.GetText("Instruction4"), labelStyle);
+            UnityEngine.GUILayout.Label(LanguageManager.GetText("Instruction5"), labelStyle);
+            UnityEngine.GUILayout.Label(LanguageManager.GetText("Instruction6"), labelStyle);
+            UnityEngine.GUILayout.Label(LanguageManager.GetText("Instruction7"), labelStyle); 
+            UnityEngine.GUILayout.Label(LanguageManager.GetText("Instruction8"), labelStyle);
             UnityEngine.GUILayout.EndScrollView();
             
             UnityEngine.GUILayout.EndVertical();
             
-            // 允许拖动窗口
-            UnityEngine.GUI.DragWindow();
+            // 恢复原始样式
+            GUI.skin.window = originalWindowStyle;
+            GUI.skin.box = originalBoxStyle;
+            GUI.skin.button = originalButtonStyle;
         }
         
 
