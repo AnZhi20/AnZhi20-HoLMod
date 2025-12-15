@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 using YuanAPI;
 
 namespace cs.HoLMod.AddItem;
@@ -8,7 +9,7 @@ namespace cs.HoLMod.AddItem;
 public class AddItemModule : IAddItemModel
 {
     // 随机数生成器
-    Random Random = new Random();
+    System.Random Random = new System.Random();
 
     # region IAddItemModel 实现
     
@@ -139,13 +140,15 @@ public class AddItemModule : IAddItemModel
 			{
 				$"{UIId}",                          // 马匹的UIID，对应官方的预制件名称
 				"1",                                // 马匹的年龄，默认添加的均为1
-				Random.Next(10, 20).ToString(),     // 不知道用来干嘛的，先使用随机整数来赋值，至少还没出现Bug
+				(18 + TrueRandom.GetRanom(8)).ToString(),   // 索引2，不知道用来干嘛的，先使用随机整数来赋值，至少还没出现Bug
+                //Random.Next(10000, 20000).ToString(),     // 索引2，不知道用来干嘛的，先使用随机整数来赋值，至少还没出现Bug
 				"100",                              // 马匹的力量，默认添加的均为100
 				"100",                              // 马匹的速度，默认添加的均为100
 				"100",                              // 马匹的智商，默认添加的均为100
 				null                                // 马匹的主人，默认添加的均为null
 			});
             Mainload.FamilyData[6] = (int.Parse(Mainload.FamilyData[6]) - 1).ToString();
+            Mainload.HorseData_Enter = "null";
             ShowInfo(_i18N.t($"Tip.AddHorse.Succeed"));
         }
         else
