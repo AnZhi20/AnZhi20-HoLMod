@@ -1,3 +1,7 @@
+### v4.1.0
+
+- 修复bug：马匹模式下添加的马匹不能正确使用，之前版本错误添加的马匹在新马匹添加时会自动进行修复。（Fixed bug: Horses added in the horse mode cannot be used correctly, and horses added in previous versions with errors will be automatically fixed when adding new horses.）
+
 ### v4.0.0
 
 - 重新设计所有的窗口界面。（Redesign all window interfaces.）

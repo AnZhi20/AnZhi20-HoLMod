@@ -141,19 +141,36 @@ public class AddItemModule : IAddItemModel
 				$"{UIId}",                          // 马匹的UIID，对应官方的预制件名称
 				"1",                                // 马匹的年龄，默认添加的均为1
 				(18 + TrueRandom.GetRanom(8)).ToString(),   // 索引2，不知道用来干嘛的，先使用随机整数来赋值，至少还没出现Bug
-                //Random.Next(10000, 20000).ToString(),     // 索引2，不知道用来干嘛的，先使用随机整数来赋值，至少还没出现Bug
 				"100",                              // 马匹的力量，默认添加的均为100
 				"100",                              // 马匹的速度，默认添加的均为100
 				"100",                              // 马匹的智商，默认添加的均为100
-				null                                // 马匹的主人，默认添加的均为null
+				"null"                              // 马匹的主人，默认添加的均为null，没有主人的时候为null
 			});
             Mainload.FamilyData[6] = (int.Parse(Mainload.FamilyData[6]) - 1).ToString();
             Mainload.HorseData_Enter = "null";
             ShowInfo(_i18N.t($"Tip.AddHorse.Succeed"));
+
+            // 遍历所有马匹，将之前版本错误添加的马匹重新正确设置
+            for (int i = 0; i < Mainload.Horse_Have.Count; i++)
+            {
+                if (Mainload.Horse_Have[i][6] == null)
+                {
+                    Mainload.Horse_Have[i][6] = "null";
+                }
+            }
         }
         else
         {
             ShowWarning(_i18N.t($"Tip.AddHorse.Failed"));
+
+            // 遍历所有马匹，将之前版本错误添加的马匹重新正确设置
+            for (int i = 0; i < Mainload.Horse_Have.Count; i++)
+            {
+                if (Mainload.Horse_Have[i][6] == null)
+                {
+                    Mainload.Horse_Have[i][6] = "null";
+                }
+            }
         }
         
     }

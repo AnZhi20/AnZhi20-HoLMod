@@ -1,6 +1,6 @@
 {
     "name": "AddItem",
-    "version_number": "4.0.0",
+    "version_number": "4.1.0",
     "website_url": "https://github.com/AnZhi20/AnZhi20-HoLMod",
     "description": "在游戏内按F2打开窗口可自定义添加物品。Press F2 in-game to open a window where you can add items.",
     "dependencies": [
