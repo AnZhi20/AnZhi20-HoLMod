@@ -14,7 +14,7 @@ public class AddItem : BaseUnityPlugin
 {
     public const string MODGUID = "cs.HoLMod.AddItem.AnZhi20";
     public const string MODNAME = "HoLMod.AddItem";
-    public const string VERSION = "4.1.0";
+    public const string VERSION = "4.2.0";
     
     internal new static ManualLogSource Logger;
     internal static string LocaleNamespace = "AddItem";

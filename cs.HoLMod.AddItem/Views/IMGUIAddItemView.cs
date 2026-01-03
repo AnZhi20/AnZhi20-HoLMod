@@ -862,7 +862,7 @@ public class IMGUIAddItemView : MonoBehaviour, IAddItemView
         { MapTab.Mansion, MapPartFlag.Jun | MapPartFlag.Xian | MapPartFlag.Name },
         { MapTab.Farm , MapPartFlag.Jun | MapPartFlag.Xian | MapPartFlag.Area | MapPartFlag.Name },
         { MapTab.Fief , MapPartFlag.Jun},
-        { MapTab.Clan, MapPartFlag.Jun | MapPartFlag.Xian },
+        { MapTab.Clan, MapPartFlag.Jun | MapPartFlag.Xian | MapPartFlag.Name },
         { MapTab.Cemetery, MapPartFlag.Jun | MapPartFlag.Xian | MapPartFlag.Area | MapPartFlag.Name },
     };
 

@@ -293,9 +293,35 @@ public class AddItemModule : IAddItemModel
         }
     }
 
-    public void AddClan(int junId, int xianId)
+    public void AddClan(int junId, int xianId, string name)
     {
-        ShowWarning("添加世家功能正在开发中");
+        // ShowWarning("添加世家功能正在开发中");
+
+        // 判断所处位置是否为已覆灭的世家遗址
+        bool IsClanRuins = false;
+        int ClanIndex  = Mainload.ShiJia_Now.Count;  // 世家索引默认为新世家索引
+        for (int i = 0; i < Mainload.ShiJia_Now.Count; i++)
+        {
+            if (Mainload.ShiJia_Now[i][5] == $"{junId}|{xianId}")
+            {
+                IsClanRuins = true;
+                ClanIndex = i;	// 如果为已覆灭的世家遗址，更新世家索引记录
+                break;
+            }
+        }
+
+        // 执行主要的Add逻辑
+        string ClanName = name;
+        if (IsClanRuins)
+        {
+            NewShijia_InOldShijia(ClanIndex, ClanName);
+            ShowInfo(_i18N.t("Tip.Clan.AddSucceed_A", GetLocationName(junId, xianId)));
+        }
+        else
+        {
+            NewShijiaData(junId, xianId, true, ClanName);
+            ShowInfo(_i18N.t("Tip.Clan.AddSucceed_B", GetLocationName(junId, xianId)));
+        }
     }
 
     public void AddCemetery(int junId, int xianId, string area, string name)
@@ -375,6 +401,295 @@ public class AddItemModule : IAddItemModel
 		});
         ShowInfo(_i18N.t("Tip.FarmToCemetery", GetLocationName(junId, xianId)));
     }
+    
+    // 在旧址处崛起新世家
+    public static void NewShijia_InOldShijia(int ShijiaIndex, string ClanName)
+	{
+		if (TrueRandom.GetRanom(150) < 2)
+		{
+			int num = TrueRandom.GetRanom(25);
+			if (num >= 5 && num <= 20)
+			{
+				num = 1;
+			}
+			else if (num >= 21 && num <= 24)
+			{
+				num = 2;
+			}
+			int shijiaLv = TrueRandom.GetRanom(20) + 10;
+			Mainload.ShiJia_Now[ShijiaIndex] = new List<string>
+			{
+				"0",
+				ClanName,       // 将原本官方的RandName.GetXingShiOnly()随机姓氏, 替换为ClanName输入姓氏
+				shijiaLv.ToString(),
+				"0",
+				"0",
+				Mainload.ShiJia_Now[ShijiaIndex][5],
+				num.ToString(),
+				"0",
+				"null",
+				"0",
+				TrueRandom.GetRanom(InitFudiBuild.AllFudidata.Count).ToString(),
+				FormulaData.JunNum_Shijia(shijiaLv, num.ToString()),
+				"100"
+			};
+			Mainload.NewCreateShijia.Add(Mainload.ShiJia_Now[ShijiaIndex][5] + "|" + ShijiaIndex.ToString());
+			for (int i = 0; i < Mainload.ShiJia_Now.Count; i++)
+			{
+				if (i != ShijiaIndex)
+				{
+					string[] array = Mainload.ShiJia_Now[i][8].Split(new char[]
+					{
+						'|'
+					});
+					string text = "null";
+					for (int j = 0; j < array.Length; j++)
+					{
+						if (array[j].Split(new char[]
+						{
+							'@'
+						})[0] != ShijiaIndex.ToString())
+						{
+							if (text == "null")
+							{
+								text = array[j];
+							}
+							else
+							{
+								text = text + "|" + array[j];
+							}
+						}
+					}
+					Mainload.ShiJia_Now[i][8] = text;
+				}
+			}
+			string[] array2 = Mainload.ShiJia_king[5].Split(new char[]
+			{
+				'|'
+			});
+			string text2 = "null";
+			for (int k = 0; k < array2.Length; k++)
+			{
+				if (array2[k].Split(new char[]
+				{
+					'@'
+				})[0] != ShijiaIndex.ToString())
+				{
+					if (text2 == "null")
+					{
+						text2 = array2[k];
+					}
+					else
+					{
+						text2 = text2 + "|" + array2[k];
+					}
+				}
+			}
+			Mainload.ShiJia_king[5] = text2;
+			Mainload.Event_now.Add(new List<string>
+			{
+				"20",
+				"182|2|null|27@" + ShijiaIndex.ToString() + "|0"
+			});
+		}
+	}
+
+    // 新的世家数据
+    public static void NewShijiaData(int CityID, int XianID, bool isInit, string ClanName)
+	{
+        if (Mainload.ShijiaOutXianPoint[CityID].Contains(XianID))
+		{
+			bool flag = false;
+			int shijiaLv;
+			if (isInit)
+			{
+				shijiaLv = TrueRandom.GetRanom(3) + 10 + 5 * Mainload.ShiJia_Now.Count;
+			}
+			else
+			{
+				for (int i = 0; i < Mainload.ShiJia_Now.Count; i++)
+				{
+					if (Mainload.ShiJia_Now[i][5] == CityID.ToString() + "|" + XianID.ToString())
+					{
+						flag = true;
+						break;
+					}
+				}
+				shijiaLv = TrueRandom.GetRanom(3) + 15 + Mainload.ShiJia_Now.Count;
+			}
+			if (!flag)
+			{
+				int num = TrueRandom.GetRanom(25);
+				if (num >= 5 && num <= 20)
+				{
+					num = 1;
+				}
+				else if (num >= 21 && num <= 24)
+				{
+					num = 2;
+				}
+				if (Mainload.ShiJia_Now.Count < 2)
+				{
+					num = 1;
+				}
+				else if (Mainload.ShiJia_Now.Count == 2)
+				{
+					num = 2;
+				}
+				else if (Mainload.ShiJia_Now.Count == 3)
+				{
+					num = 1;
+				}
+				else if (Mainload.ShiJia_Now.Count == 4)
+				{
+					num = 2;
+				}
+				Mainload.ShiJia_Now.Add(new List<string>
+				{
+					"0",
+					ClanName,       // 将原本官方的RandName.GetXingShiOnly()随机姓氏, 替换为ClanName输入姓氏
+					shijiaLv.ToString(),
+					"0",
+					"0",
+					CityID.ToString() + "|" + XianID.ToString(),
+					num.ToString(),
+					"0",
+					"null",
+					"0",
+					TrueRandom.GetRanom(InitFudiBuild.AllFudidata.Count).ToString(),
+					FormulaData.JunNum_Shijia(shijiaLv, num.ToString()),
+					"100"
+				});
+				Mainload.Member_other.Add(new List<List<string>>());
+				Mainload.Member_Other_qu.Add(new List<List<string>>());
+				FormulaData.New_Member_OneShijia(Mainload.ShiJia_Now.Count - 1);
+				if (!isInit)
+				{
+					Mainload.NewCreateShijia.Add(string.Concat(new string[]
+					{
+						CityID.ToString(),
+						"|",
+						XianID.ToString(),
+						"|",
+						(Mainload.ShiJia_Now.Count - 1).ToString()
+					}));
+				}
+				FormulaData.CreatNewNongZOutFengdi(Mainload.ShiJia_Now.Count - 1, CityID, XianID);
+				if (!isInit)
+				{
+					Mainload.NewCreateNongZ.Add(string.Concat(new string[]
+					{
+						CityID.ToString(),
+						"|",
+						XianID.ToString(),
+						"|",
+						(Mainload.NongZ_now[0].Count - 1).ToString()
+					}));
+					return;
+				}
+			}
+		}
+		else
+		{
+			bool flag2 = false;
+			if (!isInit)
+			{
+				for (int j = 0; j < Mainload.NongZ_now[0].Count; j++)
+				{
+					if (Mainload.NongZ_now[0][j][4] == CityID.ToString() + "|" + XianID.ToString())
+					{
+						flag2 = true;
+						break;
+					}
+				}
+			}
+			if (!flag2)
+			{
+				List<int> list = new List<int>();
+				if (Mainload.ShiJia_Now.Count > 2)
+				{
+					list = new List<int>
+					{
+						Mainload.ShiJia_Now.Count - 3,
+						Mainload.ShiJia_Now.Count - 2,
+						Mainload.ShiJia_Now.Count - 1
+					};
+				}
+				else if (Mainload.ShiJia_Now.Count > 1)
+				{
+					list = new List<int>
+					{
+						Mainload.ShiJia_Now.Count - 2,
+						Mainload.ShiJia_Now.Count - 1
+					};
+				}
+				else if (Mainload.ShiJia_Now.Count > 0)
+				{
+					list = new List<int>
+					{
+						Mainload.ShiJia_Now.Count - 1
+					};
+				}
+				if (list.Count > 0)
+				{
+					int ranom = TrueRandom.GetRanom(list.Count);
+					if (Mainload.ShiJia_Now[ranom][0] == "0")
+					{
+						FormulaData.CreatNewNongZOutFengdi(ranom, CityID, XianID);
+						if (!isInit)
+						{
+							Mainload.NewCreateNongZ.Add(string.Concat(new string[]
+							{
+								CityID.ToString(),
+								"|",
+								XianID.ToString(),
+								"|",
+								(Mainload.NongZ_now[0].Count - 1).ToString()
+							}));
+							return;
+						}
+					}
+				}
+				else
+				{
+					FormulaData.CreatNewNongZOutFengdi(-2, CityID, XianID);
+					if (!isInit)
+					{
+						Mainload.NewCreateNongZ.Add(string.Concat(new string[]
+						{
+							CityID.ToString(),
+							"|",
+							XianID.ToString(),
+							"|",
+							(Mainload.NongZ_now[0].Count - 1).ToString()
+						}));
+					}
+				}
+			}
+		}
+	
+        /*
+		Mainload.ShiJia_Now.Add(new List<string>
+		{
+			"0",
+			ClanName,       // 将原本官方的RandName.GetXingShiOnly()随机姓氏, 替换为ClanName输入姓氏
+			"25",
+			"0",
+			"0",
+			CityID.ToString() + "|" + XianID.ToString(),
+			"4",
+			"0",
+			"null",
+			"0",
+			TrueRandom.GetRanom(InitFudiBuild.AllFudidata.Count).ToString(),
+			FormulaData.JunNum_Shijia(25, "1"),
+			"100"
+		});
+		Mainload.Member_other.Add(new List<List<string>>());
+		Mainload.Member_Other_qu.Add(new List<List<string>>());
+		FormulaData.CreatNewNongZOutFengdi(Mainload.ShiJia_Now.Count - 1, CityID, XianID);
+        */
+	}
     
     private static bool ValidateJunUnlocked(int junId)
     {

@@ -18,7 +18,7 @@ public interface IAddItemModel
     void AddMansion(int junId, int xianId, string name);
     void AddFarm(int junId, int xianId, string area, string name);
     void AddFief(int junId);
-    void AddClan(int junId, int xianId);
+    void AddClan(int junId, int xianId, string ClanName);
     void AddCemetery(int junId, int xianId, string area, string name);
     void AddHorse(int UIId);
 }

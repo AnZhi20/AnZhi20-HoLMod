@@ -163,7 +163,7 @@ public class AddItemController
                 _model.AddFief(junId);
                 break;
             case MapTab.Clan:
-                _model.AddClan(junId, xianId);
+                _model.AddClan(junId, xianId, GetName());
                 break;
             case MapTab.Cemetery:
                 if (!CheckArea(area))
@@ -200,6 +200,8 @@ public class AddItemController
                 break;
             case MapTab.Fief:
             case MapTab.Clan:
+                name = RandName.GetXingShiOnly();
+                break;
             case MapTab.Cemetery:
                 name = RandName.GetMudiName();
                 break;
