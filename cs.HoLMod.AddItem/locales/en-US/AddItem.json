@@ -69,7 +69,8 @@
     "Clear": "Clear"
   },
   "Error": {
-    "NoProp": "No matching item found"
+    "NoProp": "No matching item found",
+    "ModFilesIncomplete": "AddItem mod files are incomplete, please reinstall"
   },
   "Tip": {
         "AddItem": {

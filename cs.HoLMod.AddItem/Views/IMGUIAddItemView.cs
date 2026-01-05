@@ -178,25 +178,98 @@ public class IMGUIAddItemView : MonoBehaviour, IAddItemView
 
     private void Update()
     {
-        // 按F2键切换窗口显示
+        // 按F2键时判断MOD文件是否齐全
+        bool isMODFilesComlete = false;
         if (Input.GetKeyDown(KeyCode.F2))
         {
-            ShowMenu = !ShowMenu;
+            // 获取Dll路径
+            string assemblyPath = System.Reflection.Assembly.GetExecutingAssembly().Location;
+            string dllDirectory = System.IO.Path.GetDirectoryName(assemblyPath);
 
-            if (ShowMenu)
+            // 检查是否存在cs.HoLMod.AddItem.dll
+            string ModDllAddItemPath = System.IO.Path.Combine(dllDirectory, "cs.HoLMod.AddItem.dll");
+
+            // 检查是否存在locales下的所有内容
+            string localesDirectory = System.IO.Path.Combine(dllDirectory, "locales");
+            string enUSPath = System.IO.Path.Combine(localesDirectory, "en-US");
+            string enUSJsonPath = System.IO.Path.Combine(enUSPath, "AddItem.json");
+            string zhCNPath = System.IO.Path.Combine(localesDirectory, "zh-CN");
+            string zhCNJsonPath = System.IO.Path.Combine(zhCNPath, "AddItem.json");
+
+            // 检查是否存在Sprites下的所有内容
+            string spritesDirectory = System.IO.Path.Combine(dllDirectory, "Sprites");
+            string BiaoQianAPath = System.IO.Path.Combine(spritesDirectory, "BiaoQianA.png");
+            string BiaoQianBPath = System.IO.Path.Combine(spritesDirectory, "BiaoQianB.png");
+            string BTFPath = System.IO.Path.Combine(spritesDirectory, "BTF.png");
+            string BTGPath = System.IO.Path.Combine(spritesDirectory, "BTG.png");
+            string KuangCPath = System.IO.Path.Combine(spritesDirectory, "KuangC.png");
+            string lineAPath = System.IO.Path.Combine(spritesDirectory, "lineA.png");
+            string PanelCPath = System.IO.Path.Combine(spritesDirectory, "PanelC.png");
+            string StartBTAPath = System.IO.Path.Combine(spritesDirectory, "StartBTA.png");
+            string TongQianPath = System.IO.Path.Combine(spritesDirectory, "TongQian.png");
+            string YuanBaoPath = System.IO.Path.Combine(spritesDirectory, "YuanBao.png");
+            
+            // 检查是否存在Fonts下的所有内容
+            string fontsDirectory = System.IO.Path.Combine(dllDirectory, "Fonts");
+            string SourceHanSansSC_Medium_2Path = System.IO.Path.Combine(fontsDirectory, "SourceHanSansSC-Medium-2.otf");
+            string SourceHanSansSC_Bold_2Path = System.IO.Path.Combine(fontsDirectory, "SourceHanSansSC-Bold-2.otf");
+            string XingKaiPath = System.IO.Path.Combine(fontsDirectory, "XingKai.ttf");
+            
+            // 判断条件
+            if (System.IO.File.Exists(ModDllAddItemPath) &&
+                System.IO.Directory.Exists(localesDirectory) &&
+                System.IO.Directory.Exists(enUSPath) &&
+                System.IO.File.Exists(enUSJsonPath) &&
+                System.IO.Directory.Exists(zhCNPath) &&
+                System.IO.File.Exists(zhCNJsonPath) &&
+                System.IO.Directory.Exists(spritesDirectory) &&
+                System.IO.File.Exists(BiaoQianAPath) &&
+                System.IO.File.Exists(BiaoQianBPath) &&
+                System.IO.File.Exists(BTFPath) &&
+                System.IO.File.Exists(BTGPath) &&
+                System.IO.File.Exists(KuangCPath) &&
+                System.IO.File.Exists(lineAPath) &&
+                System.IO.File.Exists(PanelCPath) &&
+                System.IO.File.Exists(StartBTAPath) &&
+                System.IO.File.Exists(TongQianPath) &&
+                System.IO.File.Exists(YuanBaoPath) &&
+                System.IO.File.Exists(fontsDirectory) &&
+                System.IO.File.Exists(SourceHanSansSC_Medium_2Path) &&
+                System.IO.File.Exists(SourceHanSansSC_Bold_2Path) &&
+                System.IO.File.Exists(XingKaiPath))
             {
-                UpdateResolutionSettings();
-                // 关闭地图面板，避免误操作
-                Mainload.isMapPanelOpen = false;
+                isMODFilesComlete = true;
             }
             else
             {
-                // 关闭窗口时清除悬浮状态
-                HoveredPropId = null;
-                HoveredStoryId = null;
+                isMODFilesComlete = false;
+                MsgTool.TipMsg(_i18N.t("Error.ModFilesIncomplete"), TipLv.Warning);
+                AddItem.Logger.LogInfo(_i18N.t("Error.ModFilesIncomplete"));
             }
-            
-            AddItem.Logger.LogInfo($"物品添加器窗口已{(ShowMenu?"打开":"关闭")}" );
+        }
+
+        if (isMODFilesComlete)
+        {
+            // 按F2键切换窗口显示
+            if (Input.GetKeyDown(KeyCode.F2))
+            {
+                ShowMenu = !ShowMenu;
+
+                if (ShowMenu)
+                {
+                    UpdateResolutionSettings();
+                    // 关闭地图面板，避免误操作
+                    Mainload.isMapPanelOpen = false;
+                }
+                else
+                {
+                    // 关闭窗口时清除悬浮状态
+                    HoveredPropId = null;
+                    HoveredStoryId = null;
+                }
+
+                AddItem.Logger.LogInfo($"物品添加器窗口已{(ShowMenu?"打开":"关闭")}" );
+            }
         }
         
         // 阻止游戏输入当窗口显示时（游戏会继续运行，但不允许操作游戏界面）

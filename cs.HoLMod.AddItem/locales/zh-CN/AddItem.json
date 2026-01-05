@@ -69,7 +69,8 @@
     "Clear": "清空"
   },
   "Error": {
-    "NoProp": "未找到匹配的物品"
+    "NoProp": "未找到匹配的物品",
+    "ModFilesIncomplete": "物品添加器MOD文件不全，请重新安装"
   },
   "Tip": {
         "AddItem": {

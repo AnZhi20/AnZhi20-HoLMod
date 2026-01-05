@@ -1,3 +1,7 @@
+### v4.2.0
+
+- 添加检测：物品添加器MOD文件是否完整。（Add detection: Whether the AddItem MOD files are complete.）
+
 ### v4.1.0
 
 - 修复bug：马匹模式下添加的马匹不能正确使用，之前版本错误添加的马匹在新马匹添加时会自动进行修复。（Fixed bug: Horses added in the horse mode cannot be used correctly, and horses added in previous versions with errors will be automatically fixed when adding new horses.）
@@ -14,7 +18,7 @@
 
 - 新增添加马匹功能。（Add the ability to add horses.）
 - 新增添加墓地功能。（Add the ability to add graves.）
-- 为更好全面兼容，新增了依赖：[YuanAPI](https://thunderstore.io/c/house-of-legacy/p/LymoneLM/YuanAPI/)（For better comprehensive compatibility, dependencies have been added:[YuanAPI](https://thunderstore.io/c/house-of-legacy/p/LymoneLM/YuanAPI/)）
+- 为更好全面兼容，新增了依赖：[YuanAPI](https://thunderstore.io/c/house-of-legacy/p/LymoneLM/YuanAPI/)，如果不愿添加依赖也可以安装更早期的版本使用。（For better comprehensive compatibility, dependencies have been added:[YuanAPI](https://thunderstore.io/c/house-of-legacy/p/LymoneLM/YuanAPI/), but you can also install an earlier version without adding dependencies.）
 
 ### v2.9.0
 
