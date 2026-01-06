@@ -295,8 +295,9 @@ public class AddItemModule : IAddItemModel
 
     public void AddClan(int junId, int xianId, string name)
     {
-        // ShowWarning("添加世家功能正在开发中");
+        ShowWarning(_i18N.t("Tip.Clan.Developing"));
 
+		/*
         // 判断所处位置是否为已覆灭的世家遗址
         bool IsClanRuins = false;
         int ClanIndex  = Mainload.ShiJia_Now.Count;  // 世家索引默认为新世家索引
@@ -322,6 +323,7 @@ public class AddItemModule : IAddItemModel
             NewShijiaData(junId, xianId, true, ClanName);
             ShowInfo(_i18N.t("Tip.Clan.AddSucceed_B", GetLocationName(junId, xianId)));
         }
+		*/
     }
 
     public void AddCemetery(int junId, int xianId, string area, string name)

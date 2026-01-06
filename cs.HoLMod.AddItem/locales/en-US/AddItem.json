@@ -96,6 +96,11 @@
         "AddHorse": {
             "Failed": "Failed to add horse, not enough stables to store",
             "Succeed": "Successfully added horse"
+        },
+        "Clan": {
+            "AddSucceed_A": "Successfully added clan at ({0})",
+            "AddSucceed_B": "Successfully unlocked clan at ({0})",
+            "Developing": "Adding clan feature is under development"
         }
     },
     "MapTab": {

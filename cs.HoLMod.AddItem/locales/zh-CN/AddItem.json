@@ -96,6 +96,11 @@
         "AddHorse": {
             "Failed": "马匹添加失败，没有足够的马厩存放",
             "Succeed": "马匹添加成功"
+        },
+        "Clan": {
+            "AddSucceed_A": "已在({0})添加世家",
+            "AddSucceed_B": "已解锁({0})的世家",
+            "Developing": "添加世家功能正在开发中"
         }
     },
   "MapTab": {
