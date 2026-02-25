@@ -1,6 +1,7 @@
 ### v4.2.0
 
 - 添加检测：物品添加器MOD文件是否完整。（Add detection: Whether the AddItem MOD files are complete.）
+- 适配更新：适配了新版的[YuanAPI](https://thunderstore.io/c/house-of-legacy/p/LymoneLM/YuanAPI/)。（Adaptation update: adapted to the new version of [YuanAPI](https://thunderstore.io/c/house-of-legacy/p/LymoneLM/YuanAPI/)）
 
 ### v4.1.0
 

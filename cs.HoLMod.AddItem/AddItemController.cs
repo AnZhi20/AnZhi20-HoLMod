@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using YuanAPI;
+using YuanAPI.Tools;
 
 namespace cs.HoLMod.AddItem;
 

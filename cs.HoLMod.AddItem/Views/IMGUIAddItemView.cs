@@ -4,6 +4,7 @@ using System.Diagnostics;
 using cs.HoLMod.AddItem.Views;
 using UnityEngine;
 using YuanAPI;
+using YuanAPI.Tools;
 
 namespace cs.HoLMod.AddItem;
 
@@ -179,7 +180,7 @@ public class IMGUIAddItemView : MonoBehaviour, IAddItemView
     private void Update()
     {
         // 按F2键时判断MOD文件是否齐全
-        bool isMODFilesComlete = false;
+        bool isMODFilesComlete = true;
         if (Input.GetKeyDown(KeyCode.F2))
         {
             // 获取Dll路径
@@ -233,7 +234,7 @@ public class IMGUIAddItemView : MonoBehaviour, IAddItemView
                 System.IO.File.Exists(StartBTAPath) &&
                 System.IO.File.Exists(TongQianPath) &&
                 System.IO.File.Exists(YuanBaoPath) &&
-                System.IO.File.Exists(fontsDirectory) &&
+                System.IO.Directory.Exists(fontsDirectory) &&
                 System.IO.File.Exists(SourceHanSansSC_Medium_2Path) &&
                 System.IO.File.Exists(SourceHanSansSC_Bold_2Path) &&
                 System.IO.File.Exists(XingKaiPath))
@@ -242,8 +243,22 @@ public class IMGUIAddItemView : MonoBehaviour, IAddItemView
             }
             else
             {
+                string[] test = new string[]
+                {
+                    ModDllAddItemPath, localesDirectory, enUSPath, enUSJsonPath, zhCNPath, zhCNJsonPath,
+                    spritesDirectory, BiaoQianAPath, BiaoQianBPath, BTFPath, BTGPath,
+                    KuangCPath, lineAPath, PanelCPath, StartBTAPath, TongQianPath, YuanBaoPath,
+                    fontsDirectory,SourceHanSansSC_Medium_2Path, SourceHanSansSC_Bold_2Path, XingKaiPath
+                };
                 isMODFilesComlete = false;
                 MsgTool.TipMsg(_i18N.t("Error.ModFilesIncomplete"), TipLv.Warning);
+                for (int i = 0; i < test.Length; i++)
+                {
+                    if (!System.IO.File.Exists(test[i]))
+                    {
+                        AddItem.Logger.LogError($"缺失文件或文件夹: {test[i]}");
+                    }
+                }
                 AddItem.Logger.LogInfo(_i18N.t("Error.ModFilesIncomplete"));
             }
         }

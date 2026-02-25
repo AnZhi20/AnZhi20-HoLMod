@@ -5,6 +5,7 @@ using BepInEx.Configuration;
 using BepInEx.Logging;
 using UnityEngine;
 using YuanAPI;
+using YuanAPI.Tools;
 
 namespace cs.HoLMod.AddItem;
 

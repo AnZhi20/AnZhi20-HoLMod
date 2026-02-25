@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using YuanAPI;
+using YuanAPI.Tools;
 
 namespace cs.HoLMod.AddItem;
 
